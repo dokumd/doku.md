@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>doku.md — Mockup</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent-rgb: 61, 235, 106;
+            --accent:        rgba(var(--accent-rgb), 1);
+            --accent-bg:     rgba(var(--accent-rgb), 0.08);
+            --accent-border: rgba(var(--accent-rgb), 0.2);
+
+            --text-1: #E8E8EC;
+            --text-2: #8f8f9b;
+
+            --bg-1: #1C1C1E;
+            --bg-2: #252528;
+
+            --border: #2E2E32;
+
+            --toast-success: rgba(var(--accent-rgb), 1);
+            --toast-warning: #FABC3C;
+            --toast-error: #F05050;
+
+            --overlay-bg: rgba(10,10,12,0.8);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; width: 100%; }
+        body { background: var(--bg-1); font-family: 'Inter', sans-serif; }
+
+        .dk { display: flex; flex-direction: column; height: 100vh; width: 100%; background: var(--bg-1); }
+
+        /* Titlebar */
+        .dk-titlebar {
+            background: var(--bg-1);
+            border-bottom: 0.5px solid var(--border);
+            padding: 0 16px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .dk-brand { display: flex; align-items: center; gap: 9px; }
+        .dk-logo { width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .dk-logo svg { width: 13px; height: 13px; fill: white; }
+        .dk-name { font-size: 15px; font-weight: 500; color: var(--text-1); letter-spacing: -0.01em; }
+        .dk-name span { font-size: 11px; color: var(--text-2); }
+
+        .dk-titlebar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+        .dk-btn {
+            font-size: 13px;
+            padding: 5px 11px;
+            border-radius: 6px;
+            border: 0.5px solid var(--border);
+            background: transparent;
+            color: var(--text-2);
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .dk-btn:hover { color: var(--text-2); border-color: var(--text-2); }
+        .dk-btn i { font-size: 14px; }
+
+        .dk-dots { display: flex; align-items: center; gap: 7px; margin-left: 6px; }
+        .dk-dot { width: 12px; height: 12px; color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .dk-dot i { font-size: 11px; }
+
+        kbd {
+            font-size: 10px;
+            font-weight: bold;
+            color: var(--text-2);
+            background: var(--bg-1);
+            border: 0.5px solid var(--border);
+            border-radius: 3px;
+            padding: 1px 5px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Body */
+        .dk-body { display: flex; flex: 1; overflow: hidden; }
+
+        /* Left sidebar — acordeão */
+        .dk-left {
+            width: 250px;
+            flex-shrink: 0;
+            background: var(--bg-1);
+            border-right: 0.5px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Accordion section header */
+        .dk-acc-header {
+            padding: 10px 12px;
+            font-size: 11px;
+            color: var(--text-2);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            flex-shrink: 0;
+            border-bottom: 0.5px solid var(--border);
+            user-select: none;
+        }
+        .dk-acc-header:hover { color: var(--text-2); }
+        .dk-acc-header i { font-size: 13px; transition: transform 0.15s; }
+        .dk-acc-header.open i { transform: rotate(180deg); }
+
+        /* Accordion section body */
+        .dk-acc-body {
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+        }
+        .dk-acc-body.open { display: flex; flex-direction: column; }
+        .dk-acc-body::-webkit-scrollbar { width: 3px; }
+        .dk-acc-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        /* File tree */
+        .dk-tree { padding: 4px 6px 10px; }
+
+        .dk-folder {
+            padding: 6px 8px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-2);
+            cursor: pointer;
+        }
+        .dk-folder i { font-size: 15px; color: var(--text-2); }
+
+        .dk-file {
+            padding: 6px 8px 6px 30px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-2);
+            cursor: pointer;
+            position: relative;
+        }
+        .dk-file i.file-icon { font-size: 15px; color: var(--text-2); flex-shrink: 0; }
+        .dk-file.active { background: var(--accent-bg); color: var(--text-1); }
+        .dk-file.active i.file-icon { color: var(--accent); }
+
+        /* Star icon on file */
+        .dk-file .star {
+            font-size: 13px;
+            color: var(--text-2);
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        .dk-file .star.on { color: var(--accent); }
+        .dk-file:hover .star { color: var(--text-2); }
+        .dk-file .star.on:hover { color: var(--accent); }
+
+        /* Bookmarks list */
+        .dk-bm-list { padding: 4px 6px 10px; }
+        .dk-bm-item {
+            padding: 6px 8px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-2);
+            cursor: pointer;
+        }
+        .dk-bm-item i { font-size: 15px; color: var(--accent); flex-shrink: 0; }
+        .dk-bm-item:hover { background: rgba(61,235,106,0.06); color: var(--text-1); }
+
+        /* Center */
+        .dk-wrap { position: relative; flex: 1; display: flex; overflow: hidden; }
+        .dk-center { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-2); }
+
+        /* Tabs */
+        .dk-tabs {
+            display: flex;
+            align-items: center;
+            background: var(--bg-1);
+            border-bottom: 0.5px solid var(--border);
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .dk-tabs-scroll { display: flex; align-items: center; overflow: hidden; flex: 1; min-width: 0; }
+        .dk-tab {
+            padding: 10px 16px;
+            font-size: 14px;
+            color: var(--text-2);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            border-right: 0.5px solid var(--border);
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .dk-tab.active { color: var(--text-1); background: var(--bg-2); }
+        .dk-tab i { font-size: 14px; }
+        .dk-tab .close { font-size: 12px; color: var(--text-2); margin-left: 4px; }
+
+        .dk-tabs-overflow {
+            flex-shrink: 0;
+            width: 32px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-1);
+            border-left: 0.5px solid var(--border);
+            cursor: pointer;
+            color: var(--text-2);
+            font-size: 16px;
+        }
+        .dk-tabs-overflow:hover { color: var(--text-1); background: var(--bg-2); }
+
+        .dk-overflow-dropdown {
+            position: absolute;
+            top: 44px;
+            right: 0;
+            background: var(--bg-2);
+            border: 0.5px solid var(--border);
+            border-radius: 8px;
+            width: 300px;
+            max-height: 60vh;
+            overflow-y: auto;
+            z-index: 200;
+            padding: 6px;
+            display: none;
+        }
+        .dk-overflow-dropdown::-webkit-scrollbar { width: 3px; }
+        .dk-overflow-dropdown::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .dk-overflow-dropdown.open { display: block; }
+
+        .dk-overflow-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-2);
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .dk-overflow-item:hover { background: var(--accent-bg); color: var(--text-1); }
+        .dk-overflow-item i { font-size: 15px; color: var(--text-2); flex-shrink: 0; }
+        .dk-overflow-item:hover i { color: var(--accent); }
+        .dk-overflow-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Doc */
+        .dk-doc { flex: 1; overflow-y: auto; padding: 44px 56px; }
+        .dk-doc::-webkit-scrollbar { width: 3px; }
+        .dk-doc::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .dk-doc h1 { font-size: 26px; font-weight: 500; color: var(--text-1); margin: 0 0 10px; letter-spacing: -0.02em; }
+        .dk-doc .meta { font-size: 13px; color: var(--text-2); margin-bottom: 32px; display: flex; gap: 16px; align-items: center; }
+        .dk-doc .meta .star-doc { font-size: 16px; color: var(--text-2); cursor: pointer; margin-left: 8px; }
+        .dk-doc .meta .star-doc.on { color: var(--accent); }
+        .dk-doc h2 { font-size: 17px; font-weight: 500; color: var(--text-1); margin: 32px 0 12px; border-bottom: 0.5px solid var(--border); padding-bottom: 9px; }
+        .dk-doc p { font-size: 15px; color: var(--text-2); line-height: 1.8; margin: 0 0 16px; }
+        .dk-doc code { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--bg-1); border: 0.5px solid var(--border); border-radius: 4px; padding: 2px 7px; color: var(--accent); }
+        .dk-codeblock { background: var(--bg-1); border: 0.5px solid var(--border); border-radius: 8px; padding: 20px 22px; margin: 16px 0; }
+        .dk-codeblock pre { margin: 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 1.8; }
+        .ck-kw { color: #C084FC; }
+        .ck-st { color: #86EFAC; }
+        .ck-cm { color: #4A4A58; }
+        .ck-tx { color: #D8D8EC; }
+
+        /* Right TOC */
+        .dk-right { width: 210px; flex-shrink: 0; background: var(--bg-1); border-left: 0.5px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+        .dk-toc { flex: 1; overflow-y: auto; padding: 18px 10px; }
+        .dk-toc-title { font-size: 11px; color: var(--text-2); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; margin-bottom: 12px; padding: 0 6px; }
+        .dk-toc-item { padding: 6px 10px; border-radius: 5px; font-size: 14px; color: var(--text-2); cursor: pointer; }
+        .dk-toc-item.active { color: var(--accent); background: var(--accent-bg); }
+        .dk-toc-item.l2 { padding-left: 22px; font-size: 13px; }
+        .dk-toc-item.l3 { padding-left: 32px; font-size: 13px; color: var(--text-2); }
+        .dk-status { padding: 10px 13px; border-top: 0.5px solid var(--border); font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+        .dk-status i { font-size: 14px; color: var(--accent); }
+        .dk-badge { font-size: 11px; background: var(--accent-bg); color: var(--accent); border: 0.5px solid var(--accent-border); border-radius: 4px; padding: 2px 8px; margin-left: auto; }
+
+        /* Search overlay */
+        .dk-cmd { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); display: flex; align-items: flex-start; justify-content: center; padding-top: 100px; z-index: 10; }
+        .dk-cmd-box { background: var(--bg-2); border: 0.5px solid var(--border); border-radius: 12px; width: 540px; overflow: hidden; }
+        .dk-cmd-input { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 0.5px solid var(--border); }
+        .dk-cmd-input i { color: var(--accent); font-size: 20px; flex-shrink: 0; }
+        .dk-cmd-input span { font-size: 16px; color: var(--text-1); flex: 1; }
+        .cursor { display: inline-block; width: 2px; height: 17px; background: var(--accent); border-radius: 1px; animation: blink 1s infinite; vertical-align: -3px; }
+        @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+        .dk-cmd-results { padding: 8px; }
+        .dk-cmd-r { padding: 11px 13px; border-radius: 7px; display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); cursor: pointer; }
+        .dk-cmd-r.selected { background: var(--accent-bg); color: var(--text-1); }
+        .dk-cmd-r i { font-size: 17px; flex-shrink: 0; }
+        .dk-cmd-r.selected i { color: var(--accent); }
+        .dk-cmd-r .path { font-size: 12px; color: var(--text-2); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+        .dk-cmd-r.selected .path { color: var(--text-2); }
+        .dk-cmd-footer { padding: 11px 18px; border-top: 0.5px solid var(--border); display: flex; gap: 16px; }
+        .dk-cmd-hint { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+
+        /* Shortcuts overlay */
+        .dk-shortcuts {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: var(--overlay-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+        .dk-shortcuts-box {
+            background: var(--bg-2);
+            border: 0.5px solid var(--border);
+            border-radius: 12px;
+            width: 480px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 24px 28px;
+        }
+        .dk-shortcuts-box::-webkit-scrollbar { width: 3px; }
+        .dk-shortcuts-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        .dk-shortcuts-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-1);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .dk-shortcuts-title i {
+            font-size: 16px;
+            color: var(--text-2);
+            cursor: pointer;
+        }
+        .dk-shortcuts-title i:hover { color: var(--text-1); }
+        .dk-shortcuts-group {
+            margin-bottom: 20px;
+        }
+        .dk-shortcuts-group-title {
+            font-size: 11px;
+            color: var(--text-2);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        .dk-shortcut-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 0.5px solid #323238;
+            font-size: 14px;
+            color: var(--text-2);
+        }
+        .dk-shortcut-row:last-child { border-bottom: none; }
+        .dk-shortcut-keys {
+            display: flex;
+            gap: 4px;
+        }
+
+
+        /* Toasts */
+        .dk-toasts {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            z-index: 1000;
+            pointer-events: none;
+        }
+        .dk-toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 280px;
+            max-width: 420px;
+            pointer-events: all;
+            border: 0.5px solid transparent;
+        }
+        .dk-toast i { font-size: 16px; flex-shrink: 0; }
+        .dk-toast span { flex: 1; line-height: 1.4; }
+        .dk-toast .toast-close {
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0.5;
+            margin-left: 6px;
+            flex-shrink: 0;
+        }
+        .dk-toast .toast-close:hover { opacity: 1; }
+
+        .dk-toast.success {
+            background: var(--bg-2);
+            border-color: var(--border);
+            color: var(--text-2);
+        }
+        .dk-toast.success i { color: var(--accent); }
+
+        .dk-toast.warning {
+            background: var(--bg-2);
+            border-color: var(--border);
+            color: var(--text-2);
+        }
+        .dk-toast.warning i { color: var(--toast-warning); }
+
+        .dk-toast.error {
+            background: var(--bg-2);
+            border-color: var(--border);
+            color: var(--text-2);
+        }
+        .dk-toast.error i { color: var(--toast-error); }
+
+    </style>
+</head>
+<body>
+<script>
+
+    function showShortcuts() {
+        document.getElementById('shortcuts-overlay').style.display = 'flex';
+    }
+    function hideShortcuts() {
+        document.getElementById('shortcuts-overlay').style.display = 'none';
+    }
+
+    // Search overlay
+    function showView(v) {
+        var overlay = document.getElementById('cmd-overlay');
+        if (v === 'search') {
+            overlay.style.display = 'flex';
+        } else {
+            overlay.style.display = 'none';
+        }
+    }
+
+    // Accordion
+    function toggleAcc(section) {
+        var sections = ['project', 'bookmarks'];
+        sections.forEach(function(s) {
+            var header = document.querySelector('[onclick="toggleAcc(\'' + s + '\')"]');
+            var body = document.getElementById('acc-' + s);
+            if (s === section) {
+                var isOpen = body.classList.contains('open');
+                if (!isOpen) {
+                    body.classList.add('open');
+                    header.classList.add('open');
+                }
+            } else {
+                body.classList.remove('open');
+                var h = document.querySelector('[onclick="toggleAcc(\'' + s + '\')"]');
+                h.classList.remove('open');
+            }
+        });
+    }
+
+    // Tabs overflow dropdown
+    function toggleOverflow(e) {
+        e.stopPropagation();
+        var dropdown = document.getElementById('overflow-dropdown');
+        var btn = document.getElementById('tabs-overflow-btn');
+        var isOpen = dropdown.classList.contains('open');
+        dropdown.classList.toggle('open');
+        btn.querySelector('i').className = isOpen ? 'ti ti-chevron-down' : 'ti ti-chevron-up';
+    }
+
+    document.addEventListener('click', function(e) {
+        var btn = document.getElementById('tabs-overflow-btn');
+        var dropdown = document.getElementById('overflow-dropdown');
+        if (dropdown && !btn.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
+            btn.querySelector('i').className = 'ti ti-chevron-down';
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); showView('search'); }
+        if (e.key === 'Escape') { showView('browse'); hideShortcuts(); }
+        if (e.key === '?') { var active = document.activeElement; if (!active || active.tagName !== 'INPUT') showShortcuts(); }
+    });
+</script>
+
+<div class="dk">
+    <div class="dk-titlebar">
+        <div class="dk-brand">
+            <div class="dk-logo">
+                <svg viewBox="0 0 13 13">
+                    <rect x="1" y="1" width="4.5" height="4.5" rx="1"/>
+                    <rect x="7.5" y="1" width="4.5" height="4.5" rx="1"/>
+                    <rect x="1" y="7.5" width="4.5" height="4.5" rx="1"/>
+                    <circle cx="9.75" cy="9.75" r="2.25"/>
+                </svg>
+            </div>
+            <div class="dk-name">doku<span>.md</span></div>
+        </div>
+
+        <div class="dk-titlebar-actions">
+            <div class="dk-btn" onclick="showView('search')">
+                <i class="ti ti-search"></i>
+                Search
+                <kbd>CTRL+K</kbd>
+            </div>
+            <div class="dk-btn" onclick="showView('browse')">
+                <i class="ti ti-folder-open"></i>
+                Browse
+                <kbd>CTRL+O</kbd>
+            </div>
+        </div>
+
+        <div class="dk-btn" onclick="showShortcuts()" style="padding: 5px 10px;"><i class="ti ti-help"></i></div>
+        <div class="dk-dots">
+            <div class="dk-dot"><i class="ti ti-minus"></i></div>
+            <div class="dk-dot"><i class="ti ti-square"></i></div>
+            <div class="dk-dot"><i class="ti ti-x"></i></div>
+        </div>
+    </div>
+
+    <div class="dk-body">
+        <!-- Sidebar acordeão -->
+        <div class="dk-left">
+            <!-- Project section — aberta por omissão -->
+            <div class="dk-acc-header open" onclick="toggleAcc('project')">
+                Project
+                <i class="ti ti-chevron-up"></i>
+            </div>
+            <div class="dk-acc-body open" id="acc-project">
+                <div class="dk-tree">
+                    <div class="dk-folder"><i class="ti ti-chevron-down"></i><i class="ti ti-folder"></i>specs</div>
+                    <div class="dk-file active">
+                        <i class="ti ti-file-text file-icon"></i>spec.md
+                        <i class="ti ti-star-filled star on"></i>
+                    </div>
+                    <div class="dk-file">
+                        <i class="ti ti-file-text file-icon"></i>plan.md
+                        <i class="ti ti-star star"></i>
+                    </div>
+                    <div class="dk-file">
+                        <i class="ti ti-file-text file-icon"></i>tasks.md
+                        <i class="ti ti-star star"></i>
+                    </div>
+                    <div class="dk-folder" style="margin-top:4px"><i class="ti ti-chevron-down"></i><i class="ti ti-folder"></i>docs</div>
+                    <div class="dk-file">
+                        <i class="ti ti-file-text file-icon"></i>architecture.md
+                        <i class="ti ti-star-filled star on"></i>
+                    </div>
+                    <div class="dk-file">
+                        <i class="ti ti-file-text file-icon"></i>quickstart.md
+                        <i class="ti ti-star star"></i>
+                    </div>
+                    <div class="dk-folder" style="margin-top:4px"><i class="ti ti-chevron-right"></i><i class="ti ti-folder"></i>pkg</div>
+                    <div class="dk-folder" style="margin-top:4px"><i class="ti ti-chevron-right"></i><i class="ti ti-folder"></i>frontend</div>
+                </div>
+            </div>
+
+            <!-- Bookmarks section — fechada por omissão -->
+            <div class="dk-acc-header" onclick="toggleAcc('bookmarks')" style="border-top: 0.5px solid var(--border);">
+                Bookmarks
+                <i class="ti ti-chevron-down"></i>
+            </div>
+            <div class="dk-acc-body" id="acc-bookmarks">
+                <div class="dk-bm-list">
+                    <div class="dk-bm-item"><i class="ti ti-star-filled"></i>spec.md</div>
+                    <div class="dk-bm-item"><i class="ti ti-star-filled"></i>architecture.md</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dk-wrap">
+            <div class="dk-center">
+                <!-- Tabs -->
+                <div class="dk-tabs">
+                    <div class="dk-tabs-scroll">
+                        <div class="dk-tab active"><i class="ti ti-file-text"></i>spec.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>plan.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>tasks.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>architecture.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>quickstart.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>constitution.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>indexer.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>data-model.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>README.md<span class="close"><i class="ti ti-x"></i></span></div>
+                        <div class="dk-tab"><i class="ti ti-file-text"></i>AGENTS.md<span class="close"><i class="ti ti-x"></i></span></div>
+                    </div>
+                    <div class="dk-tabs-overflow" id="tabs-overflow-btn" onclick="toggleOverflow(event)">
+                        <i class="ti ti-chevron-down"></i>
+                    </div>
+                </div>
+
+                <!-- Overflow dropdown -->
+                <div class="dk-overflow-dropdown" id="overflow-dropdown">
+                    <div class="dk-overflow-item" title="docs/section-1/document-090.md"><i class="ti ti-file-text"></i><span>document-090.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-5/document-089.md"><i class="ti ti-file-text"></i><span>document-089.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-4/document-088.md"><i class="ti ti-file-text"></i><span>document-088.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-3/document-087.md"><i class="ti ti-file-text"></i><span>document-087.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-2/document-086.md"><i class="ti ti-file-text"></i><span>document-086.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-1/document-085.md"><i class="ti ti-file-text"></i><span>document-085.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-5/document-084.md"><i class="ti ti-file-text"></i><span>document-084.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-4/document-083.md"><i class="ti ti-file-text"></i><span>document-083.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-3/document-082.md"><i class="ti ti-file-text"></i><span>document-082.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-2/document-081.md"><i class="ti ti-file-text"></i><span>document-081.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-1/document-080.md"><i class="ti ti-file-text"></i><span>document-080.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-5/document-079.md"><i class="ti ti-file-text"></i><span>document-079.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-4/document-078.md"><i class="ti ti-file-text"></i><span>document-078.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-3/document-077.md"><i class="ti ti-file-text"></i><span>document-077.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-2/document-076.md"><i class="ti ti-file-text"></i><span>document-076.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-1/document-075.md"><i class="ti ti-file-text"></i><span>document-075.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-5/document-074.md"><i class="ti ti-file-text"></i><span>document-074.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-4/document-073.md"><i class="ti ti-file-text"></i><span>document-073.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-3/document-072.md"><i class="ti ti-file-text"></i><span>document-072.md</span></div>
+                    <div class="dk-overflow-item" title="docs/section-2/document-071.md"><i class="ti ti-file-text"></i><span>document-071.md</span></div>
+                </div>
+
+                <!-- Document -->
+                <div class="dk-doc">
+                    <h1>Feature Specification: Markdown Documentation Browser</h1>
+                    <div class="meta">
+                        <span>specs/001-markdown-doc-browser</span>
+                        <span>·</span>
+                        <span>2026-06-10</span>
+                        <span>·</span>
+                        <span>Draft</span>
+                        <i class="ti ti-star-filled star-doc on"></i>
+                    </div>
+                    <h2>Overview</h2>
+                    <p>Desktop application for browsing, searching, and understanding Markdown-based technical documentation. Helps developers recover context from projects where documentation is spread across multiple files and folders.</p>
+                    <h2>User Stories</h2>
+                    <p>The core experience is opening a project folder and navigating its documentation through a file tree. Search is the second pillar — finding information quickly when browsing isn't enough.</p>
+                    <h2>Technical Stack</h2>
+                    <div class="dk-codeblock"><pre><span class="ck-kw">const</span> <span class="ck-tx"> stack</span> = {
+  backend:  <span class="ck-st">'Wails3 + Go 1.22'</span>,
+  frontend: <span class="ck-st">'Svelte 5 + TypeScript'</span>,
+  storage:  <span class="ck-st">'SQLite + FTS5'</span>,
+  watcher:  <span class="ck-st">'fsnotify'</span>,
+}<span class="ck-cm">  // one database per project</span></pre></div>
+                    <h2>Success Criteria</h2>
+                    <p>Open a project with <code>1000</code> files in under <code>5s</code>. Full-text search returns results in under <code>1s</code>. File changes reflected within <code>3s</code>. Memory usage under <code>200MB</code> at scale.</p>
+                </div>
+            </div>
+
+            <!-- Right TOC -->
+            <div class="dk-right">
+                <div class="dk-toc">
+                    <div class="dk-toc-title">On this page</div>
+                    <div class="dk-toc-item active">Overview</div>
+                    <div class="dk-toc-item l2">User stories</div>
+                    <div class="dk-toc-item l2">Technical stack</div>
+                    <div class="dk-toc-item l2">Success criteria</div>
+                    <div class="dk-toc-item" style="margin-top:8px">Requirements</div>
+                    <div class="dk-toc-item l2">Functional</div>
+                    <div class="dk-toc-item l2">Key entities</div>
+                    <div class="dk-toc-item" style="margin-top:8px">Assumptions</div>
+                    <div class="dk-toc-item l3">Edge cases</div>
+                    <div class="dk-toc-item l3">Out of scope</div>
+                </div>
+                <div class="dk-status">
+                    <i class="ti ti-database"></i>
+                    <span>1 842 docs indexed</span>
+                    <span class="dk-badge">Ready</span>
+                </div>
+            </div>
+
+
+            <!-- Shortcuts overlay -->
+            <div class="dk-shortcuts" id="shortcuts-overlay" style="display:none">
+                <div class="dk-shortcuts-box">
+                    <div class="dk-shortcuts-title">
+                        Keyboard Shortcuts
+                        <i class="ti ti-x" onclick="hideShortcuts()"></i>
+                    </div>
+
+                    <div class="dk-shortcuts-group">
+                        <div class="dk-shortcuts-group-title">Navigation</div>
+                        <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>O</kbd></span></div>
+                        <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>K</kbd></span></div>
+                        <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>W</kbd></span></div>
+                        <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>TAB</kbd></span></div>
+                        <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div>
+                        <div class="dk-shortcut-row"><span>Reopen last closed tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>SHIFT</kbd><kbd>T</kbd></span></div>
+                    </div>
+
+                    <div class="dk-shortcuts-group">
+                        <div class="dk-shortcuts-group-title">Bookmarks</div>
+                        <div class="dk-shortcut-row"><span>Toggle bookmark</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>D</kbd></span></div>
+                    </div>
+
+                    <div class="dk-shortcuts-group">
+                        <div class="dk-shortcuts-group-title">General</div>
+                        <div class="dk-shortcut-row"><span>Keyboard shortcuts</span><span class="dk-shortcut-keys"><kbd>?</kbd></span></div>
+                        <div class="dk-shortcut-row"><span>Close overlay</span><span class="dk-shortcut-keys"><kbd>ESC</kbd></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search overlay -->
+            <div class="dk-cmd" id="cmd-overlay" style="display:none">
+                <div class="dk-cmd-box">
+                    <div class="dk-cmd-input">
+                        <i class="ti ti-search"></i>
+                        <span>FTS5 full-text search<span class="cursor"></span></span>
+                    </div>
+                    <div class="dk-cmd-results">
+                        <div class="dk-cmd-r selected"><i class="ti ti-file-text"></i><span>FTS5 indexing strategy</span><span class="path">specs/plan.md</span></div>
+                        <div class="dk-cmd-r"><i class="ti ti-file-text"></i><span>SQLite FTS5 schema design</span><span class="path">docs/architecture.md</span></div>
+                        <div class="dk-cmd-r"><i class="ti ti-file-text"></i><span>Search performance goals</span><span class="path">specs/spec.md</span></div>
+                        <div class="dk-cmd-r"><i class="ti ti-file-text"></i><span>pkg/search/search.go contract</span><span class="path">contracts/indexer.md</span></div>
+                    </div>
+                    <div class="dk-cmd-footer">
+                        <div class="dk-cmd-hint"><kbd>↵</kbd> open</div>
+                        <div class="dk-cmd-hint"><kbd>↑↓</kbd> navigate</div>
+                        <div class="dk-cmd-hint"><kbd>esc</kbd> close</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toasts -->
+<div class="dk-toasts">
+    <div class="dk-toast success">
+        <i class="ti ti-circle-check"></i>
+        <span>Bookmark added — <strong>spec.md</strong></span>
+        <i class="ti ti-x toast-close"></i>
+    </div>
+    <div class="dk-toast warning">
+        <i class="ti ti-alert-triangle"></i>
+        <span><strong>architecture.md</strong> was modified externally. Reload?</span>
+        <i class="ti ti-x toast-close"></i>
+    </div>
+    <div class="dk-toast error">
+        <i class="ti ti-circle-x"></i>
+        <span>Failed to index <strong>document-042.md</strong> — permission denied</span>
+        <i class="ti ti-x toast-close"></i>
+    </div>
+</div>
+
+</body>
+</html>

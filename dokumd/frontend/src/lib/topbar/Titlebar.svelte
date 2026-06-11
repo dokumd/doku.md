@@ -1,0 +1,50 @@
+<script lang="ts">
+  import { IconMinus, IconSquare, IconX } from '@tabler/icons-svelte'
+  import { Minimise, Maximise, Close } from '../../../bindings/changeme/internal/services/windowservice.js'
+
+  // Titlebar is the top bar of the app. It contains the brand, action buttons,
+  // and platform-specific window controls (minimise, maximise, close).
+  // Props are event callbacks — the parent controls what each button does.
+  let {
+    onsearch,    // Called when the user clicks Search / Ctrl+K
+    onbrowse,    // Called when the user clicks Browse / Ctrl+O
+    onshortcuts, // Called when the user clicks the ? button
+  }: {
+    onsearch: () => void
+    onbrowse: () => void
+    onshortcuts: () => void
+  } = $props()
+</script>
+
+<div class="dk-titlebar">
+  <div class="dk-brand">
+    <div class="dk-logo">
+      <svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white">
+        <rect x="1"   y="1"   width="4.5" height="4.5" rx="1"/>
+        <rect x="7.5" y="1"   width="4.5" height="4.5" rx="1"/>
+        <rect x="1"   y="7.5" width="4.5" height="4.5" rx="1"/>
+        <circle cx="9.75" cy="9.75" r="2.25"/>
+      </svg>
+    </div>
+    <span class="dk-name">doku<span class="ext">.md</span></span>
+  </div>
+  <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div>
+  <div class="dk-titlebar-actions">
+    <button class="dk-btn" onclick={onsearch}>
+      <span>Search</span> <kbd>CTRL+K</kbd>
+    </button>
+    <button class="dk-btn" onclick={onbrowse}>
+      <span>Browse</span> <kbd>CTRL+O</kbd>
+    </button>
+  </div>
+
+  <button class="dk-btn" style="padding: 5px 10px" onclick={onshortcuts}>
+    <span>?</span>
+  </button>
+
+  <div class="dk-dots">
+    <div class="dk-dot" onclick={Minimise}><IconMinus size={11} /></div>
+    <div class="dk-dot" onclick={Maximise}><IconSquare size={11} /></div>
+    <div class="dk-dot" onclick={Close}><IconX size={11} /></div>
+  </div>
+</div>

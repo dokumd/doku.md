@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Name=My Product
+Comment=A dokumd application
+# The Exec line includes %u to pass the URL to the application
+Exec=/usr/local/bin/dokumd %u
+Terminal=false
+Type=Application
+Icon=dokumd
+Categories=Utility;
+StartupWMClass=dokumd
+
+ 
