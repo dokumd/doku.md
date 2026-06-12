@@ -5,11 +5,13 @@
   // Renders a tree of folders and files. Each file row includes a clickable
   // star icon (bookmark toggle) visible on hover and always visible if bookmarked.
   // The isDir flag comes from the backend scanner and determines how each node is rendered.
-  let { nodes, ontogglefolder, ontogglebookmark, onselectfile }: {
+  // bookmarkedPaths is a Set of relative paths to show the star as filled.
+  let { nodes, ontogglefolder, ontogglebookmark, onselectfile, bookmarkedPaths = new Set<string>() }: {
     nodes: FileNode[]
     ontogglefolder: (node: FileNode) => void
     ontogglebookmark: (node: FileNode) => void
     onselectfile: (node: FileNode) => void
+    bookmarkedPaths?: Set<string>
   } = $props()
 </script>
 
@@ -32,7 +34,7 @@
       </div>
 
       {#if node.expanded && node.children}
-        <svelte:self nodes={node.children} {ontogglefolder} {ontogglebookmark} {onselectfile} />
+        <svelte:self nodes={node.children} {ontogglefolder} {ontogglebookmark} {onselectfile} {bookmarkedPaths} />
       {/if}
     {:else}
       <div
@@ -44,12 +46,12 @@
         <IconFileText size={14} />
         <span>{node.name}</span>
         <span
-          class="star {node.bookmarked ? 'on' : ''}"
+          class="star {bookmarkedPaths.has(node.path) ? 'on' : ''}"
           onclick={(e: MouseEvent) => { e.stopPropagation(); ontogglebookmark(node) }}
           role="button"
           tabindex="0"
         >
-          {#if node.bookmarked}
+          {#if bookmarkedPaths.has(node.path)}
             <IconStarFilled size={13} />
           {:else}
             <IconStar size={13} />

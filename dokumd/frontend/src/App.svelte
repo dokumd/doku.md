@@ -27,9 +27,10 @@
   import Accordion from './lib/sidebar/Accordion.svelte'
   import FileTree from './lib/sidebar/FileTree.svelte'
   import Bookmarks from './lib/sidebar/Bookmarks.svelte'
+  import RecentFolders from './lib/sidebar/RecentFolders.svelte'
   import ToastContainer from './lib/feedback/ToastContainer.svelte'
   import StatusBar from './lib/center/StatusBar.svelte'
-  import { OpenFolder, GetFileTree, IndexProject, GetDocument, SaveOpenTabs, GetOpenTabs } from '../bindings/changeme/internal/services/folderservice.js'
+  import { OpenFolder, GetFileTree, IndexProject, GetDocument, SaveOpenTabs, GetOpenTabs, AddRecentFolder, GetRecentFolders, GetLastFolder, AddBookmark, RemoveBookmark, GetBookmarks } from '../bindings/changeme/internal/services/folderservice.js'
   import { Minimise, Maximise, Close } from '../bindings/changeme/internal/services/windowservice.js'
   import type { Tab, FileNode, TocItem, Toast } from './lib/types.js'
   import { buildTree } from './lib/helpers/tree.js'
@@ -38,15 +39,14 @@
 
   // ─── State ───────────────────────────────────────────────────────────────
 
-  let accOpen = $state<string>('project')
+  let accOpen = $state<string>('folder')
   let showSearch = $state(false)
   let showShortcuts = $state(false)
-  let overflowOpen = $state(false)
+  let modifier = $state('CTRL')
   let projectPath = $state<string | null>(null)
 
   // Open tabs — populated when the user clicks files in the tree.
   let tabs = $state<Tab[]>([])
-  let overflowTabs = $state<Tab[]>([])
   let nextTabId = $state(1)
 
   // File tree — populated when the user opens a folder.
@@ -54,6 +54,8 @@
   let indexCount = $state(0)
   let indexStatus = $state<string>('idle')
   let activeDoc = $state<{ html: string; title: string; headings: TocItem[] } | null>(null)
+  let recentFolders = $state<{ path: string; lastOpened: string }[]>([])
+  let bookmarksList = $state<{ relPath: string; title: string }[]>([])
 
   // Demo toasts
   let toasts = $state<Toast[]>([
@@ -65,7 +67,7 @@
   // ─── Derived ─────────────────────────────────────────────────────────────
 
   let bookmarked = $derived(
-          tree.flatMap(n => n.children ?? []).filter(f => f.bookmarked)
+          bookmarksList
   )
 
   let activeTabPath = $derived(tabs.find(t => t.active)?.path ?? '')
@@ -119,8 +121,17 @@
     node.expanded = !node.expanded
   }
 
-  function toggleBookmark(node: FileNode) {
-    node.bookmarked = !node.bookmarked
+  async function toggleBookmark(node: FileNode) {
+    if (!projectPath) return
+    const relPath = node.path
+    const isBookmarked = bookmarksList.some(b => b.relPath === relPath)
+    if (isBookmarked) {
+      await RemoveBookmark(projectPath, relPath)
+    } else {
+      const title = node.name.replace(/\.md$/, '')
+      await AddBookmark(projectPath, relPath, title)
+    }
+    bookmarksList = await GetBookmarks(projectPath)
   }
 
   function closeTab(id: string) {
@@ -138,19 +149,20 @@
     toasts = toasts.filter(t => t.id !== id)
   }
 
-  async function openFolder() {
-    const path = await OpenFolder()
-    if (path) {
-      projectPath = path
+  async function openFolder(path?: string) {
+    const folderPath = path ?? await OpenFolder()
+    if (folderPath) {
+      projectPath = folderPath
       indexStatus = 'indexing'
-      const files = await GetFileTree(path)
+      const files = await GetFileTree(folderPath)
       tree = buildTree(files)
 
-      // IndexProject cria a BD e corre as migrações antes de tentar ler os tabs.
-      await IndexProject(path)
+      await IndexProject(folderPath)
+      AddRecentFolder(folderPath)
+      recentFolders = await GetRecentFolders()
+      bookmarksList = await GetBookmarks(folderPath)
 
-      // Restore previously open tabs for this project.
-      const saved = await GetOpenTabs(path)
+      const saved = await GetOpenTabs(folderPath)
       if (saved.length > 0) {
         tabs = saved.map((t: any, i: number) => ({
           id: String(i + 1),
@@ -182,11 +194,36 @@
     }
   }
 
-  onMount(() => {
+  onMount(async () => {
     Events.On('index:progress', (ev: any) => {
       indexCount = ev.data.done
       indexStatus = ev.data.state
     })
+
+    // Detect platform for shortcut labels.
+    if (navigator.platform.toLowerCase().includes('mac')) modifier = '⌘'
+
+    // Load recent folders and auto-open the last one if it still exists.
+    recentFolders = await GetRecentFolders()
+    const lastPath = await GetLastFolder()
+    if (lastPath) {
+      projectPath = lastPath
+      indexStatus = 'indexing'
+      const files = await GetFileTree(lastPath)
+      tree = buildTree(files)
+      IndexProject(lastPath)
+      bookmarksList = await GetBookmarks(lastPath)
+      const saved = await GetOpenTabs(lastPath)
+      if (saved.length > 0) {
+        tabs = saved.map((t: any, i: number) => ({
+          id: String(i + 1),
+          name: t.relPath.split('/').pop() ?? t.relPath,
+          path: t.relPath,
+          active: t.isActive ?? i === 0,
+        }))
+        nextTabId = saved.length + 1
+      }
+    }
   })
 </script>
 
@@ -196,7 +233,7 @@
 
   <Titlebar
     onsearch={() => showSearch = true}
-    onbrowse={openFolder}
+    onbrowse={() => openFolder()}
     onshortcuts={() => showShortcuts = true}
   />
 
@@ -209,6 +246,7 @@
           nodes={tree}
           ontogglefolder={toggleFolder}
           ontogglebookmark={toggleBookmark}
+          bookmarkedPaths={new Set(bookmarksList.map(b => b.relPath))}
           onselectfile={(file) => {
             const id = String(nextTabId++)
             const exists = tabs.find(t => t.path === file.path)
@@ -222,15 +260,30 @@
       {/snippet}
       {#snippet bookmarksContent()}
         <Bookmarks
-          items={bookmarked.map(b => ({ name: b.name, path: b.path }))}
-          onselect={() => {}}
+          items={bookmarksList.map(b => ({ name: b.title || b.relPath.split('/').pop() || b.relPath, path: b.relPath }))}
+          onselect={(b) => {
+            const id = String(nextTabId++)
+            const exists = tabs.find(t => t.path === b.path)
+            if (exists) {
+              tabs = tabs.map(t => ({ ...t, active: t.path === b.path }))
+            } else {
+              tabs = [...tabs.map(t => ({ ...t, active: false })), { id, name: b.name, path: b.path, active: true }]
+            }
+          }}
+        />
+      {/snippet}
+      {#snippet recentFoldersContent()}
+        <RecentFolders
+          items={recentFolders}
+          onselect={(p) => openFolder(p)}
         />
       {/snippet}
 
       <Accordion
         sections={[
-          { id: 'project', title: 'Project', snippet: projectContent },
-          { id: 'bookmarks', title: 'Bookmarks', snippet: bookmarksContent },
+          { id: 'folder', title: 'FOLDER', snippet: projectContent },
+          { id: 'bookmarks', title: 'BOOKMARKS', snippet: bookmarksContent },
+          { id: 'recent', title: 'RECENT FOLDERS', snippet: recentFoldersContent },
         ]}
         open={accOpen}
         ontoggle={toggleAcc}
@@ -243,11 +296,8 @@
 
         <TabBar
           {tabs}
-          {overflowTabs}
           onactivetab={activateTab}
           onclosetab={closeTab}
-          ontoggleoverflow={() => overflowOpen = !overflowOpen}
-          {overflowOpen}
         />
 
         {#if activeDoc}
@@ -257,7 +307,7 @@
         {:else}
           <DocumentView title="doku.md" path="">
             <p style="color: var(--muted); padding: 2rem; display: flex;">
-              Open a folder or <button class="dk-btn" onclick={openFolder}>Browse</button> documentation.
+              Open a folder or <button class="dk-btn" onclick={() => openFolder()}>Browse</button> documentation.
             </p>
           </DocumentView>
         {/if}
@@ -286,7 +336,7 @@
         }}
       />
 
-      <ShortcutsOverlay show={showShortcuts} onclose={() => showShortcuts = false} />
+      <ShortcutsOverlay show={showShortcuts} {modifier} onclose={() => showShortcuts = false} />
 
     </div>
   </div>

@@ -23,6 +23,40 @@ import * as search$0 from "../../pkg/search/models.js";
 import * as $models from "./models.js";
 
 /**
+ * AddBookmark adds a document to the bookmarks table for the given project.
+ * @param {string} rootPath
+ * @param {string} relPath
+ * @param {string} title
+ * @returns {$CancellablePromise<void>}
+ */
+export function AddBookmark(rootPath, relPath, title) {
+    return $Call.ByID(636601166, rootPath, relPath, title);
+}
+
+/**
+ * AddRecentFolder inserts or updates a folder in the recent list.
+ * Called every time the user opens a folder successfully.
+ * @param {string} path
+ * @returns {$CancellablePromise<void>}
+ */
+export function AddRecentFolder(path) {
+    return $Call.ByID(781739845, path);
+}
+
+/**
+ * GetBookmarks returns all bookmarks for the given project, validating each
+ * against the filesystem. Stale entries (deleted or renamed files) are
+ * automatically removed from the database.
+ * @param {string} rootPath
+ * @returns {$CancellablePromise<$models.Bookmark[]>}
+ */
+export function GetBookmarks(rootPath) {
+    return $Call.ByID(461109430, rootPath).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType1($result);
+    }));
+}
+
+/**
  * GetDocument reads a Markdown file from disk, renders it to HTML using
  * Goldmark, and returns the result along with extracted headings and title.
  * The frontend calls this when the user clicks a file in the FileTree.
@@ -32,7 +66,7 @@ import * as $models from "./models.js";
  */
 export function GetDocument(rootPath, relPath) {
     return $Call.ByID(1216640092, rootPath, relPath).then(/** @type {($result: any) => any} */(($result) => {
-        return $$createType0($result);
+        return $$createType2($result);
     }));
 }
 
@@ -48,8 +82,18 @@ export function GetDocument(rootPath, relPath) {
  */
 export function GetFileTree(rootPath) {
     return $Call.ByID(618366615, rootPath).then(/** @type {($result: any) => any} */(($result) => {
-        return $$createType2($result);
+        return $$createType4($result);
     }));
+}
+
+/**
+ * GetLastFolder returns the most recently opened folder, but only if it still
+ * exists on disk. If the path was deleted or the recent list is empty, returns
+ * an empty string. This is the folder that will be auto-opened on startup.
+ * @returns {$CancellablePromise<string>}
+ */
+export function GetLastFolder() {
+    return $Call.ByID(3119105377);
 }
 
 /**
@@ -59,7 +103,19 @@ export function GetFileTree(rootPath) {
  */
 export function GetOpenTabs(rootPath) {
     return $Call.ByID(1132693393, rootPath).then(/** @type {($result: any) => any} */(($result) => {
-        return $$createType4($result);
+        return $$createType6($result);
+    }));
+}
+
+/**
+ * GetRecentFolders returns up to 50 recent folders, validating each against
+ * the filesystem. Entries whose path no longer exists are removed from the
+ * database automatically so the list never shows stale entries.
+ * @returns {$CancellablePromise<$models.RecentFolder[]>}
+ */
+export function GetRecentFolders() {
+    return $Call.ByID(3826914623).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType8($result);
     }));
 }
 
@@ -88,6 +144,25 @@ export function OpenFolder() {
 }
 
 /**
+ * RemoveBookmark removes a document from the bookmarks table.
+ * @param {string} rootPath
+ * @param {string} relPath
+ * @returns {$CancellablePromise<void>}
+ */
+export function RemoveBookmark(rootPath, relPath) {
+    return $Call.ByID(3841548467, rootPath, relPath);
+}
+
+/**
+ * RemoveRecentFolder deletes a single entry from the recent folders list.
+ * @param {string} path
+ * @returns {$CancellablePromise<void>}
+ */
+export function RemoveRecentFolder(path) {
+    return $Call.ByID(2663766936, path);
+}
+
+/**
  * SaveOpenTabs persists the list of open tabs for a project.
  * It replaces all existing entries with the provided list.
  * @param {string} rootPath
@@ -107,7 +182,7 @@ export function SaveOpenTabs(rootPath, tabs) {
  */
 export function SearchAll(rootPath, query, limit) {
     return $Call.ByID(1874471182, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
-        return $$createType6($result);
+        return $$createType10($result);
     }));
 }
 
@@ -120,7 +195,7 @@ export function SearchAll(rootPath, query, limit) {
  */
 export function SearchByPath(rootPath, query, limit) {
     return $Call.ByID(2720517277, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
-        return $$createType6($result);
+        return $$createType10($result);
     }));
 }
 
@@ -133,15 +208,19 @@ export function SearchByPath(rootPath, query, limit) {
  */
 export function SearchByTitle(rootPath, query, limit) {
     return $Call.ByID(1802336640, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
-        return $$createType6($result);
+        return $$createType10($result);
     }));
 }
 
 // Private type creation functions
-const $$createType0 = $models.DocumentResult.createFrom;
-const $$createType1 = scanner$0.FileEntry.createFrom;
-const $$createType2 = $Create.Array($$createType1);
-const $$createType3 = $models.TabInfo.createFrom;
+const $$createType0 = $models.Bookmark.createFrom;
+const $$createType1 = $Create.Array($$createType0);
+const $$createType2 = $models.DocumentResult.createFrom;
+const $$createType3 = scanner$0.FileEntry.createFrom;
 const $$createType4 = $Create.Array($$createType3);
-const $$createType5 = search$0.Result.createFrom;
+const $$createType5 = $models.TabInfo.createFrom;
 const $$createType6 = $Create.Array($$createType5);
+const $$createType7 = $models.RecentFolder.createFrom;
+const $$createType8 = $Create.Array($$createType7);
+const $$createType9 = search$0.Result.createFrom;
+const $$createType10 = $Create.Array($$createType9);

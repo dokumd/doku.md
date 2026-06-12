@@ -11,6 +11,51 @@ import { Create as $Create } from "@wailsio/runtime";
 import * as markdown$0 from "../../pkg/markdown/models.js";
 
 /**
+ * Bookmark represents a single bookmarked document.
+ */
+export class Bookmark {
+    /**
+     * Creates a new Bookmark instance.
+     * @param {Partial<Bookmark>} [$$source = {}] - The source object to create the Bookmark.
+     */
+    constructor($$source = {}) {
+        if (!("relPath" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["relPath"] = "";
+        }
+        if (!("title" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["title"] = "";
+        }
+        if (!("createdAt" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["createdAt"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new Bookmark instance from a string or object.
+     * @param {any} [$$source = {}]
+     * @returns {Bookmark}
+     */
+    static createFrom($$source = {}) {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new Bookmark(/** @type {Partial<Bookmark>} */($$parsedSource));
+    }
+}
+
+/**
  * DocumentResult is the response returned by GetDocument.
  */
 export class DocumentResult {
@@ -63,6 +108,44 @@ export class DocumentResult {
             $$parsedSource["headings"] = $$createField2_0($$parsedSource["headings"]);
         }
         return new DocumentResult(/** @type {Partial<DocumentResult>} */($$parsedSource));
+    }
+}
+
+/**
+ * RecentFolder represents a single entry in the recent folders list.
+ */
+export class RecentFolder {
+    /**
+     * Creates a new RecentFolder instance.
+     * @param {Partial<RecentFolder>} [$$source = {}] - The source object to create the RecentFolder.
+     */
+    constructor($$source = {}) {
+        if (!("path" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["path"] = "";
+        }
+        if (!("lastOpened" in $$source)) {
+            /**
+             * @member
+             * @type {string}
+             */
+            this["lastOpened"] = "";
+        }
+
+        Object.assign(this, $$source);
+    }
+
+    /**
+     * Creates a new RecentFolder instance from a string or object.
+     * @param {any} [$$source = {}]
+     * @returns {RecentFolder}
+     */
+    static createFrom($$source = {}) {
+        let $$parsedSource = typeof $$source === 'string' ? JSON.parse($$source) : $$source;
+        return new RecentFolder(/** @type {Partial<RecentFolder>} */($$parsedSource));
     }
 }
 

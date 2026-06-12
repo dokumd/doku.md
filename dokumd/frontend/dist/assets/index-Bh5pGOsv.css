@@ -498,6 +498,32 @@ kbd {
 .dk-toast.warning .toast-icon { color: var(--toast-warning); }
 
 .dk-toast.error   .toast-icon { color: var(--toast-error); }
+  .dk-folder-list.svelte-6qkb0q {
+    padding: 4px 0;
+  }
+  .dk-folder-item.svelte-6qkb0q {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--text-2, #aaa);
+    cursor: pointer;
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .dk-folder-item.svelte-6qkb0q:hover {
+    background: var(--accent-bg, rgba(59, 130, 246, 0.1));
+    color: var(--text-1, #eee);
+  }
+  .path-text.svelte-6qkb0q {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: rtl;
+    text-align: left;
+  }
+
   .dk-statusbar.svelte-1we2aji {
     display: flex;
     align-items: center;
@@ -517,6 +543,8 @@ kbd {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    direction: rtl;
+    text-align: left;
   }
   .dk-statusbar-path.muted.svelte-1we2aji {
     font-style: italic;

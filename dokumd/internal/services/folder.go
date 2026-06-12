@@ -7,7 +7,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
+	"changeme/internal/database"
 	"changeme/pkg/indexer"
 	"changeme/pkg/markdown"
 	"changeme/pkg/scanner"
@@ -263,5 +265,150 @@ func (s *FolderService) SearchByPath(rootPath string, query string, limit int) (
 	}
 	defer db.Close()
 	return search.SearchByPath(db, query, limit)
+}
+
+// RecentFolder represents a single entry in the recent folders list.
+type RecentFolder struct {
+	Path       string `json:"path"`
+	LastOpened string `json:"lastOpened"`
+}
+
+// AddRecentFolder inserts or updates a folder in the recent list.
+// Called every time the user opens a folder successfully.
+func (s *FolderService) AddRecentFolder(path string) error {
+	_, err := database.DB.Exec(
+		`INSERT INTO recent_folders (path, last_opened) VALUES (?, ?)
+		 ON CONFLICT(path) DO UPDATE SET last_opened = ?`,
+		path, time.Now().UTC().Format(time.RFC3339), time.Now().UTC().Format(time.RFC3339))
+	return err
+}
+
+// GetRecentFolders returns up to 50 recent folders, validating each against
+// the filesystem. Entries whose path no longer exists are removed from the
+// database automatically so the list never shows stale entries.
+func (s *FolderService) GetRecentFolders() ([]RecentFolder, error) {
+	rows, err := database.DB.Query(
+		`SELECT path, last_opened FROM recent_folders ORDER BY last_opened DESC LIMIT 50`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var valid []RecentFolder
+	var toRemove []string
+
+	for rows.Next() {
+		var r RecentFolder
+		if err := rows.Scan(&r.Path, &r.LastOpened); err != nil {
+			return nil, err
+		}
+		if _, err := os.Stat(r.Path); err == nil {
+			valid = append(valid, r)
+		} else {
+			toRemove = append(toRemove, r.Path)
+		}
+	}
+
+	// Remove stale entries outside the scan loop to keep the query short.
+	for _, p := range toRemove {
+		database.DB.Exec("DELETE FROM recent_folders WHERE path = ?", p)
+	}
+
+	return valid, rows.Err()
+}
+
+// GetLastFolder returns the most recently opened folder, but only if it still
+// exists on disk. If the path was deleted or the recent list is empty, returns
+// an empty string. This is the folder that will be auto-opened on startup.
+func (s *FolderService) GetLastFolder() (string, error) {
+	var path string
+	err := database.DB.QueryRow(
+		`SELECT path FROM recent_folders ORDER BY last_opened DESC LIMIT 1`).Scan(&path)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return "", nil
+	}
+	return path, nil
+}
+
+// RemoveRecentFolder deletes a single entry from the recent folders list.
+func (s *FolderService) RemoveRecentFolder(path string) error {
+	_, err := database.DB.Exec("DELETE FROM recent_folders WHERE path = ?", path)
+	return err
+}
+
+// Bookmark represents a single bookmarked document.
+type Bookmark struct {
+	RelPath   string `json:"relPath"`
+	Title     string `json:"title"`
+	CreatedAt string `json:"createdAt"`
+}
+
+// AddBookmark adds a document to the bookmarks table for the given project.
+func (s *FolderService) AddBookmark(rootPath string, relPath string, title string) error {
+	db, err := openIndexDB(rootPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	_, err = db.Exec(
+		`INSERT OR IGNORE INTO bookmarks (rel_path, title, created_at) VALUES (?, ?, datetime('now'))`,
+		relPath, title)
+	return err
+}
+
+// RemoveBookmark removes a document from the bookmarks table.
+func (s *FolderService) RemoveBookmark(rootPath string, relPath string) error {
+	db, err := openIndexDB(rootPath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	_, err = db.Exec("DELETE FROM bookmarks WHERE rel_path = ?", relPath)
+	return err
+}
+
+// GetBookmarks returns all bookmarks for the given project, validating each
+// against the filesystem. Stale entries (deleted or renamed files) are
+// automatically removed from the database.
+func (s *FolderService) GetBookmarks(rootPath string) ([]Bookmark, error) {
+	db, err := openIndexDB(rootPath)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	rows, err := db.Query("SELECT rel_path, title, created_at FROM bookmarks ORDER BY created_at DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var valid []Bookmark
+	var toRemove []string
+
+	for rows.Next() {
+		var b Bookmark
+		if err := rows.Scan(&b.RelPath, &b.Title, &b.CreatedAt); err != nil {
+			return nil, err
+		}
+		fullPath := filepath.Join(rootPath, b.RelPath)
+		if _, err := os.Stat(fullPath); err == nil {
+			valid = append(valid, b)
+		} else {
+			toRemove = append(toRemove, b.RelPath)
+		}
+	}
+
+	for _, p := range toRemove {
+		db.Exec("DELETE FROM bookmarks WHERE rel_path = ?", p)
+	}
+
+	return valid, rows.Err()
 }
 

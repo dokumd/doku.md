@@ -10,6 +10,8 @@ export {
 };
 
 export {
+    Bookmark,
     DocumentResult,
+    RecentFolder,
     TabInfo
 } from "./models.js";

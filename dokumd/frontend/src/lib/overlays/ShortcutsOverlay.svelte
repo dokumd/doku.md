@@ -2,8 +2,8 @@
   import { IconX } from '@tabler/icons-svelte'
 
   // Overlay that lists all keyboard shortcuts organised by category.
-  // show — controls visibility; onclose — called when the user dimisses the overlay.
-  let { show, onclose }: { show: boolean; onclose: () => void } = $props()
+  // show — controls visibility; modifier — platform key (CTRL or ⌘); onclose — called when dimissed.
+  let { show, modifier = 'CTRL', onclose }: { show: boolean; modifier?: string; onclose: () => void } = $props()
 </script>
 
 {#if show}
@@ -16,17 +16,17 @@
 
       <div class="dk-shortcuts-group">
         <div class="dk-shortcuts-group-title">Navigation</div>
-        <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>O</kbd></span></div>
-        <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>K</kbd></span></div>
-        <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>W</kbd></span></div>
-        <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>TAB</kbd></span></div>
-        <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div>
-        <div class="dk-shortcut-row"><span>Reopen last closed tab</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>SHIFT</kbd><kbd>T</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>O</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>K</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>W</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>TAB</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Reopen last closed tab</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>SHIFT</kbd><kbd>T</kbd></span></div>
       </div>
 
       <div class="dk-shortcuts-group">
         <div class="dk-shortcuts-group-title">Bookmarks</div>
-        <div class="dk-shortcut-row"><span>Toggle bookmark</span><span class="dk-shortcut-keys"><kbd>CTRL</kbd><kbd>D</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Toggle bookmark</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>D</kbd></span></div>
       </div>
 
       <div class="dk-shortcuts-group">

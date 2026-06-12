@@ -80,6 +80,8 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    direction: rtl;
+    text-align: left;
   }
   .dk-statusbar-path.muted {
     font-style: italic;
