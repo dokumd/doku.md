@@ -409,7 +409,9 @@ kbd {
 
 .dk-cmd-input { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 0.5px solid var(--border); }
 
-.dk-cmd-input span { font-size: 16px; color: var(--text-1); flex: 1; }
+.dk-cmd-input input { font-size: 16px; color: var(--text-1); flex: 1; background: none; border: none; outline: none; font-family: inherit; }
+
+.dk-cmd-input input::placeholder { color: var(--text-2); }
 
 .cursor { display: inline-block; width: 2px; height: 17px; background: var(--accent); border-radius: 1px; animation: blink 1s infinite; vertical-align: -3px; }
 
@@ -417,13 +419,11 @@ kbd {
 
 .dk-cmd-results { padding: 8px; max-height: 60vh; overflow-y: auto; }
 
-.dk-cmd-r { padding: 11px 13px; border-radius: 7px; display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); cursor: pointer; }
+.dk-cmd-r { padding: 11px 13px; border-radius: 7px; display: flex; flex-direction: column; gap: 2px; font-size: 15px; color: var(--text-2); cursor: pointer; }
 
 .dk-cmd-r.selected { background: var(--accent-bg); color: var(--text-1); }
 
-.dk-cmd-r.selected .result-icon { color: var(--accent); }
-
-.dk-cmd-r .path { font-size: 12px; color: var(--text-2); margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+.dk-cmd-r .path { font-size: 12px; color: var(--text-2); font-family: 'JetBrains Mono', monospace; }
 
 .dk-cmd-footer { padding: 11px 18px; border-top: 0.5px solid var(--border); display: flex; gap: 16px; }
 

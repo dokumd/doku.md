@@ -5127,6 +5127,58 @@ function get_setters(element) {
 	return setters;
 }
 //#endregion
+//#region node_modules/svelte/src/internal/client/dom/elements/bindings/this.js
+/** @import { ComponentContext, Effect } from '#client' */
+/**
+* @param {any} bound_value
+* @param {Element} element_or_component
+* @returns {boolean}
+*/
+function is_bound_this(bound_value, element_or_component) {
+	return bound_value === element_or_component || bound_value?.[STATE_SYMBOL] === element_or_component;
+}
+/**
+* @param {any} element_or_component
+* @param {(value: unknown, ...parts: unknown[]) => void} update
+* @param {(...parts: unknown[]) => unknown} get_value
+* @param {() => unknown[]} [get_parts] Set if the this binding is used inside an each block,
+* 										returns all the parts of the each block context that are used in the expression
+* @returns {void}
+*/
+function bind_this(element_or_component = {}, update, get_value, get_parts) {
+	var component_effect = component_context.r;
+	var parent = active_effect;
+	effect(() => {
+		/** @type {unknown[]} */
+		var old_parts;
+		/** @type {unknown[]} */
+		var parts;
+		render_effect(() => {
+			old_parts = parts;
+			parts = get_parts?.() || [];
+			untrack(() => {
+				if (!is_bound_this(get_value(...parts), element_or_component)) {
+					update(element_or_component, ...parts);
+					if (old_parts && is_bound_this(get_value(...old_parts), element_or_component)) update(null, ...old_parts);
+				}
+			});
+		});
+		return () => {
+			let p = parent;
+			while (p !== component_effect && p.parent !== null && p.parent.f & 33554432) p = p.parent;
+			const teardown = () => {
+				if (parts && is_bound_this(get_value(...parts), element_or_component)) update(null, ...parts);
+			};
+			const original_teardown = p.teardown;
+			p.teardown = () => {
+				teardown();
+				original_teardown?.();
+			};
+		};
+	});
+	return element_or_component;
+}
+//#endregion
 //#region node_modules/svelte/src/internal/client/dom/legacy/lifecycle.js
 /** @import { ComponentContextLegacy } from '#client' */
 /**
@@ -8207,6 +8259,13 @@ function SearchOverlay($$anchor, $$props) {
 	let results = /* @__PURE__ */ state(proxy([]));
 	let selectedIndex = /* @__PURE__ */ state(0);
 	let debounceTimer;
+	let inputEl = /* @__PURE__ */ state(void 0);
+	user_effect(() => {
+		if ($$props.show && get(inputEl)) {
+			get(inputEl).focus();
+			get(inputEl).select();
+		}
+	});
 	function handleInput(e) {
 		const target = e.target;
 		set(query, target.value, true);
@@ -8242,7 +8301,7 @@ function SearchOverlay($$anchor, $$props) {
 		var div_2 = child(div_1);
 		var input = child(div_2);
 		remove_input_defaults(input);
-		autofocus(input, true);
+		bind_this(input, ($$value) => set(inputEl, $$value), () => get(inputEl));
 		reset(div_2);
 		var div_3 = sibling(div_2, 2);
 		var node_1 = child(div_3);
@@ -8499,7 +8558,7 @@ function DocumentView($$anchor, $$props) {
 //#endregion
 //#region src/lib/center/TableOfContents.svelte
 var root$7 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"> </div>`);
-var root_1$5 = /* @__PURE__ */ from_html(`<div class="dk-right"><div class="dk-toc"><div class="dk-toc-title">On this page</div> <!></div> <div class="dk-status"><span> </span> <span class="dk-badge"> </span></div></div>`);
+var root_1$5 = /* @__PURE__ */ from_html(`<div class="dk-right"><div class="dk-toc"><div class="dk-toc-title">On this page</div> <!></div> <div class="dk-status">TO CHANGE SOON</div></div>`);
 function TableOfContents($$anchor, $$props) {
 	push($$props, true);
 	var div = root_1$5();
@@ -8516,19 +8575,8 @@ function TableOfContents($$anchor, $$props) {
 		append($$anchor, div_2);
 	});
 	reset(div_1);
-	var div_3 = sibling(div_1, 2);
-	var span = child(div_3);
-	var text_1 = child(span);
-	reset(span);
-	var span_1 = sibling(span, 2);
-	var text_2 = child(span_1, true);
-	reset(span_1);
-	reset(div_3);
+	next(2);
 	reset(div);
-	template_effect(() => {
-		set_text(text_1, `${$$props.indexedCount ?? ""} docs indexed`);
-		set_text(text_2, $$props.status);
-	});
 	append($$anchor, div);
 	pop();
 }

@@ -175,6 +175,8 @@ func (idx *Indexer) removeFile(relPath string) {
 }
 
 // trackProgress updates the internal counters and fires the progress callback.
+// All state reads and the ready decision happen under a single lock to avoid
+// race conditions between the Done increment and the Total comparison.
 func (idx *Indexer) trackProgress(success bool) {
 	idx.mu.Lock()
 	idx.status.Done++
@@ -183,17 +185,13 @@ func (idx *Indexer) trackProgress(success bool) {
 	}
 	done := idx.status.Done
 	total := idx.status.Total
-	idx.mu.Unlock()
-
-	idx.onProgress(done, total, "indexing")
-
-	// When all files are processed, mark as ready.
-	if done >= total {
-		idx.mu.Lock()
+	state := "indexing"
+	if done >= total && total > 0 {
 		idx.status.State = "ready"
-		idx.mu.Unlock()
-		idx.onProgress(done, total, "ready")
+		state = "ready"
 	}
+	idx.mu.Unlock()
+	idx.onProgress(done, total, state)
 }
 
 // SetTotal sets the total number of files to be indexed (called before Start).

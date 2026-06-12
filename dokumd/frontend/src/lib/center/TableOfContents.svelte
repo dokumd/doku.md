@@ -25,8 +25,5 @@
       </div>
     {/each}
   </div>
-  <div class="dk-status">
-    <span>{indexedCount} docs indexed</span>
-    <span class="dk-badge">{status}</span>
-  </div>
+  <div class="dk-status">TO CHANGE SOON</div>
 </div>
