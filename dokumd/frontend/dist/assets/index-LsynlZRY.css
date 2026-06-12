@@ -501,12 +501,17 @@ kbd {
   .dk-statusbar.svelte-1we2aji {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 4px 12px;
     border-top: 0.5px solid var(--border, #333);
     font-size: 12px;
     color: var(--muted, #888);
     min-height: 26px;
     flex-shrink: 0;
+  }
+  .dk-statusbar-left.svelte-1we2aji {
+    flex: 1;
+    min-width: 0;
   }
   .dk-statusbar-path.svelte-1we2aji {
     white-space: nowrap;
@@ -516,3 +521,10 @@ kbd {
   .dk-statusbar-path.muted.svelte-1we2aji {
     font-style: italic;
   }
+  .dk-statusbar-right.svelte-1we2aji {
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .status-yellow.svelte-1we2aji { color: #eab308; }
+  .status-green.svelte-1we2aji  { color: #22c55e; }
+  .status-red.svelte-1we2aji    { color: #ef4444; }

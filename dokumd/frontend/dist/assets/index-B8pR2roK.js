@@ -143,6 +143,14 @@ var STALE_REACTION = new class StaleReactionError extends Error {
 	message = "The reaction that called `getAbortSignal()` was re-run or destroyed";
 }();
 var IS_XHTML = !!globalThis.document?.contentType && /* @__PURE__ */ globalThis.document.contentType.includes("xml");
+/**
+* `%name%(...)` can only be used during component initialisation
+* @param {string} name
+* @returns {never}
+*/
+function lifecycle_outside_component(name) {
+	throw new Error(`https://svelte.dev/e/lifecycle_outside_component`);
+}
 //#endregion
 //#region node_modules/svelte/src/internal/client/errors.js
 /**
@@ -5325,6 +5333,40 @@ function prop(props, key, flags, fallback) {
 	});
 }
 if (typeof HTMLElement === "function");
+/**
+* `onMount`, like [`$effect`](https://svelte.dev/docs/svelte/$effect), schedules a function to run as soon as the component has been mounted to the DOM.
+* Unlike `$effect`, the provided function only runs once.
+*
+* It must be called during the component's initialisation (but doesn't need to live _inside_ the component;
+* it can be called from an external module). If a function is returned _synchronously_ from `onMount`,
+* it will be called when the component is unmounted.
+*
+* `onMount` functions do not run during [server-side rendering](https://svelte.dev/docs/svelte/svelte-server#render).
+*
+* @template T
+* @param {() => NotFunction<T> | Promise<NotFunction<T>> | (() => any)} fn
+* @returns {void}
+*/
+function onMount(fn) {
+	if (component_context === null) lifecycle_outside_component("onMount");
+	if (legacy_mode_flag && component_context.l !== null) init_update_callbacks(component_context).m.push(fn);
+	else user_effect(() => {
+		const cleanup = untrack(fn);
+		if (typeof cleanup === "function") return cleanup;
+	});
+}
+/**
+* Legacy-mode: Init callbacks object for onMount/beforeUpdate/afterUpdate
+* @param {ComponentContext} context
+*/
+function init_update_callbacks(context) {
+	var l = context.l;
+	return l.u ??= {
+		a: [],
+		b: [],
+		m: []
+	};
+}
 //#endregion
 //#region node_modules/svelte/src/internal/disclose-version.js
 if (typeof window !== "undefined") ((window.__svelte ??= {}).v ??= /* @__PURE__ */ new Set()).add("5");
@@ -5450,6 +5492,31 @@ function Chevron_down($$anchor, $$props) {
 	Icon($$anchor, spread_props({
 		type: "outline",
 		name: "chevron-down"
+	}, () => $$sanitized_props, {
+		get iconNode() {
+			return iconNode;
+		},
+		children: ($$anchor, $$slotProps) => {
+			var fragment_1 = comment();
+			slot(first_child(fragment_1), $$props, "default", {}, null);
+			append($$anchor, fragment_1);
+		},
+		$$slots: { default: true }
+	}));
+}
+//#endregion
+//#region node_modules/@tabler/icons-svelte/dist/icons/chevron-right.svelte
+function Chevron_right($$anchor, $$props) {
+	const $$sanitized_props = legacy_rest_props($$props, [
+		"children",
+		"$$slots",
+		"$$events",
+		"$$legacy"
+	]);
+	const iconNode = [["path", { "d": "M9 6l6 6l-6 6" }]];
+	Icon($$anchor, spread_props({
+		type: "outline",
+		name: "chevron-right"
 	}, () => $$sanitized_props, {
 		get iconNode() {
 			return iconNode;
@@ -5917,10 +5984,10 @@ document.addEventListener("DOMContentLoaded", () => {});
 //#endregion
 //#region node_modules/@wailsio/runtime/dist/contextmenu.js
 window.addEventListener("contextmenu", contextMenuHandler);
-var call$1 = newRuntimeCaller(objectNames.ContextMenu);
+var call$2 = newRuntimeCaller(objectNames.ContextMenu);
 var ContextMenuOpen = 0;
 function openContextMenu(id, x, y, data) {
-	call$1(ContextMenuOpen, {
+	call$2(ContextMenuOpen, {
 		id,
 		x,
 		y,
@@ -6924,7 +6991,7 @@ else promiseWithResolvers = function() {
 //#endregion
 //#region node_modules/@wailsio/runtime/dist/calls.js
 window._wails = window._wails || {};
-var call = newRuntimeCaller(objectNames.Call);
+var call$1 = newRuntimeCaller(objectNames.Call);
 var cancelCall = newRuntimeCaller(objectNames.CancelCall);
 var callResponses = /* @__PURE__ */ new Map();
 var CallBinding = 0;
@@ -6960,7 +7027,7 @@ function Call(options) {
 		resolve: result.resolve,
 		reject: result.reject
 	});
-	const request = call(CallBinding, Object.assign({ "call-id": id }, options));
+	const request = call$1(CallBinding, Object.assign({ "call-id": id }, options));
 	let running = true;
 	request.then((res) => {
 		running = false;
@@ -6998,8 +7065,109 @@ function ByID(methodID, ...args) {
 	});
 }
 //#endregion
+//#region node_modules/@wailsio/runtime/dist/create.js
+/**
+* Any is a dummy creation function for simple or unknown types.
+*/
+function Any(source) {
+	return source;
+}
+/**
+* Array takes a creation function for an arbitrary type
+* and returns an in-place creation function for an array
+* whose elements are of that type.
+*/
+function Array$1(element) {
+	if (element === Any) return (source) => source === null ? [] : source;
+	return (source) => {
+		if (source === null) return [];
+		for (let i = 0; i < source.length; i++) source[i] = element(source[i]);
+		return source;
+	};
+}
+/**
+* Maps known event names to creation functions for their data types.
+* Will be monkey-patched by the binding generator.
+*/
+var Events = {};
+//#endregion
 //#region bindings/github.com/wailsapp/wails/v3/internal/eventcreate.js
-Object.freeze({});
+Object.freeze(Events);
+//#endregion
+//#region node_modules/@wailsio/runtime/dist/listener.js
+var eventListeners = /* @__PURE__ */ new Map();
+var Listener = class {
+	constructor(eventName, callback, maxCallbacks) {
+		this.eventName = eventName;
+		this.callback = callback;
+		this.maxCallbacks = maxCallbacks || -1;
+	}
+	dispatch(data) {
+		try {
+			this.callback(data);
+		} catch (err) {
+			console.error(err);
+		}
+		if (this.maxCallbacks === -1) return false;
+		this.maxCallbacks -= 1;
+		return this.maxCallbacks === 0;
+	}
+};
+function listenerOff(listener) {
+	let listeners = eventListeners.get(listener.eventName);
+	if (!listeners) return;
+	listeners = listeners.filter((l) => l !== listener);
+	if (listeners.length === 0) eventListeners.delete(listener.eventName);
+	else eventListeners.set(listener.eventName, listeners);
+}
+//#endregion
+//#region node_modules/@wailsio/runtime/dist/events.js
+window._wails = window._wails || {};
+window._wails.dispatchWailsEvent = dispatchWailsEvent;
+objectNames.Events;
+/**
+* Represents a system event or a custom event emitted through wails-provided facilities.
+*/
+var WailsEvent = class {
+	constructor(name, data) {
+		this.name = name;
+		this.data = data !== null && data !== void 0 ? data : null;
+	}
+};
+function dispatchWailsEvent(event) {
+	let listeners = eventListeners.get(event.name);
+	if (!listeners) return;
+	let wailsEvent = new WailsEvent(event.name, event.name in Events ? Events[event.name](event.data) : event.data);
+	if ("sender" in event) wailsEvent.sender = event.sender;
+	listeners = listeners.filter((listener) => !listener.dispatch(wailsEvent));
+	if (listeners.length === 0) eventListeners.delete(event.name);
+	else eventListeners.set(event.name, listeners);
+}
+/**
+* Register a callback function to be called multiple times for a specific event.
+*
+* @param eventName - The name of the event to register the callback for.
+* @param callback - The callback function to be called when the event is triggered.
+* @param maxCallbacks - The maximum number of times the callback can be called for the event. Once the maximum number is reached, the callback will no longer be called.
+* @returns A function that, when called, will unregister the callback from the event.
+*/
+function OnMultiple(eventName, callback, maxCallbacks) {
+	let listeners = eventListeners.get(eventName) || [];
+	const thisListener = new Listener(eventName, callback, maxCallbacks);
+	listeners.push(thisListener);
+	eventListeners.set(eventName, listeners);
+	return () => listenerOff(thisListener);
+}
+/**
+* Registers a callback function to be executed when the specified event occurs.
+*
+* @param eventName - The name of the event to register the callback for.
+* @param callback - The callback function to be called when the event is triggered.
+* @returns A function that, when called, will unregister the callback from the event.
+*/
+function On(eventName, callback) {
+	return OnMultiple(eventName, callback, -1);
+}
 //#endregion
 //#region node_modules/@wailsio/runtime/dist/window.js
 var DROP_TARGET_ATTRIBUTE = "data-file-drop-target";
@@ -7744,10 +7912,10 @@ delegate(["click"]);
 var root$9 = /* @__PURE__ */ from_html(`<div role="tab" tabindex="0"><!> <span> </span> <span class="close" role="button" tabindex="0"><!></span></div>`);
 var root_1$7 = /* @__PURE__ */ from_html(`<div class="dk-overflow-item" role="button" tabindex="0"><!> <span> </span></div>`);
 var root_2$2 = /* @__PURE__ */ from_html(`<div class="dk-overflow-dropdown open"></div>`);
-var root_3 = /* @__PURE__ */ from_html(`<div class="dk-tabs"><div class="dk-tabs-scroll"></div> <div class="dk-tabs-overflow" role="button" tabindex="0"><!></div></div> <!>`, 1);
+var root_3$1 = /* @__PURE__ */ from_html(`<div class="dk-tabs"><div class="dk-tabs-scroll"></div> <div class="dk-tabs-overflow" role="button" tabindex="0"><!></div></div> <!>`, 1);
 function TabBar($$anchor, $$props) {
 	push($$props, true);
-	var fragment = root_3();
+	var fragment = root_3$1();
 	var div = first_child(fragment);
 	var div_1 = child(div);
 	each(div_1, 21, () => $$props.tabs, index, ($$anchor, tab) => {
@@ -7941,72 +8109,95 @@ function Accordion($$anchor, $$props) {
 delegate(["click"]);
 //#endregion
 //#region src/lib/sidebar/FileTree.svelte
-var root$5 = /* @__PURE__ */ from_html(`<div class="dk-file" role="button" tabindex="0"><!> <span> </span> <span role="button" tabindex="0"><!></span></div>`);
-var root_1$3 = /* @__PURE__ */ from_html(`<div class="dk-folder" role="button" tabindex="0"><!> <!> </div> <!>`, 1);
+var root$5 = /* @__PURE__ */ from_html(`<div class="dk-folder" role="button" tabindex="0"><!> <!> </div> <!>`, 1);
+var root_1$3 = /* @__PURE__ */ from_html(`<div class="dk-file" role="button" tabindex="0"><!> <span> </span> <span role="button" tabindex="0"><!></span></div>`);
 var root_2$1 = /* @__PURE__ */ from_html(`<div class="dk-tree"></div>`);
 function FileTree($$anchor, $$props) {
 	push($$props, true);
 	var div = root_2$1();
 	each(div, 21, () => $$props.nodes, index, ($$anchor, node) => {
-		var fragment = root_1$3();
-		var div_1 = first_child(fragment);
-		var node_1 = child(div_1);
-		var consequent = ($$anchor) => {
-			Chevron_down($$anchor, { size: 14 });
+		var fragment = comment();
+		var node_1 = first_child(fragment);
+		var consequent_2 = ($$anchor) => {
+			var fragment_1 = root$5();
+			var div_1 = first_child(fragment_1);
+			var node_2 = child(div_1);
+			var consequent = ($$anchor) => {
+				Chevron_down($$anchor, { size: 14 });
+			};
+			var alternate = ($$anchor) => {
+				Chevron_right($$anchor, { size: 14 });
+			};
+			if_block(node_2, ($$render) => {
+				if (get(node).expanded) $$render(consequent);
+				else $$render(alternate, -1);
+			});
+			var node_3 = sibling(node_2, 2);
+			Folder(node_3, { size: 14 });
+			var text = sibling(node_3);
+			reset(div_1);
+			var node_4 = sibling(div_1, 2);
+			var consequent_1 = ($$anchor) => {
+				var fragment_4 = comment();
+				FileTree(first_child(fragment_4), {
+					get nodes() {
+						return get(node).children;
+					},
+					get ontogglefolder() {
+						return $$props.ontogglefolder;
+					},
+					get ontogglebookmark() {
+						return $$props.ontogglebookmark;
+					},
+					get onselectfile() {
+						return $$props.onselectfile;
+					}
+				});
+				append($$anchor, fragment_4);
+			};
+			if_block(node_4, ($$render) => {
+				if (get(node).expanded && get(node).children) $$render(consequent_1);
+			});
+			template_effect(() => set_text(text, ` ${get(node).name ?? ""}`));
+			delegated("click", div_1, () => $$props.ontogglefolder(get(node)));
+			append($$anchor, fragment_1);
 		};
-		var alternate = ($$anchor) => {
-			Chevron_up($$anchor, { size: 14 });
+		var alternate_2 = ($$anchor) => {
+			var div_2 = root_1$3();
+			var node_6 = child(div_2);
+			File_text(node_6, { size: 14 });
+			var span = sibling(node_6, 2);
+			var text_1 = child(span, true);
+			reset(span);
+			var span_1 = sibling(span, 2);
+			var node_7 = child(span_1);
+			var consequent_3 = ($$anchor) => {
+				Star_filled($$anchor, { size: 13 });
+			};
+			var alternate_1 = ($$anchor) => {
+				Star($$anchor, { size: 13 });
+			};
+			if_block(node_7, ($$render) => {
+				if (get(node).bookmarked) $$render(consequent_3);
+				else $$render(alternate_1, -1);
+			});
+			reset(span_1);
+			reset(div_2);
+			template_effect(() => {
+				set_text(text_1, get(node).name);
+				set_class(span_1, 1, `star ${get(node).bookmarked ? "on" : ""}`);
+			});
+			delegated("click", div_2, () => $$props.onselectfile(get(node)));
+			delegated("click", span_1, (e) => {
+				e.stopPropagation();
+				$$props.ontogglebookmark(get(node));
+			});
+			append($$anchor, div_2);
 		};
 		if_block(node_1, ($$render) => {
-			if (get(node).expanded) $$render(consequent);
-			else $$render(alternate, -1);
+			if (get(node).isDir) $$render(consequent_2);
+			else $$render(alternate_2, -1);
 		});
-		var node_2 = sibling(node_1, 2);
-		Folder(node_2, { size: 14 });
-		var text = sibling(node_2);
-		reset(div_1);
-		var node_3 = sibling(div_1, 2);
-		var consequent_2 = ($$anchor) => {
-			var fragment_3 = comment();
-			each(first_child(fragment_3), 17, () => get(node).children, index, ($$anchor, file) => {
-				var div_2 = root$5();
-				var node_5 = child(div_2);
-				File_text(node_5, { size: 14 });
-				var span = sibling(node_5, 2);
-				var text_1 = child(span, true);
-				reset(span);
-				var span_1 = sibling(span, 2);
-				var node_6 = child(span_1);
-				var consequent_1 = ($$anchor) => {
-					Star_filled($$anchor, { size: 13 });
-				};
-				var alternate_1 = ($$anchor) => {
-					Star($$anchor, { size: 13 });
-				};
-				if_block(node_6, ($$render) => {
-					if (get(file).bookmarked) $$render(consequent_1);
-					else $$render(alternate_1, -1);
-				});
-				reset(span_1);
-				reset(div_2);
-				template_effect(() => {
-					set_text(text_1, get(file).name);
-					set_class(span_1, 1, `star ${get(file).bookmarked ? "on" : ""}`);
-				});
-				delegated("click", div_2, () => $$props.onselectfile(get(file)));
-				delegated("click", span_1, (e) => {
-					e.stopPropagation();
-					$$props.ontogglebookmark(get(file));
-				});
-				append($$anchor, div_2);
-			});
-			append($$anchor, fragment_3);
-		};
-		if_block(node_3, ($$render) => {
-			if (get(node).expanded && get(node).children) $$render(consequent_2);
-		});
-		template_effect(() => set_text(text, ` ${get(node).name ?? ""}`));
-		delegated("click", div_1, () => $$props.ontogglefolder(get(node)));
 		append($$anchor, fragment);
 	});
 	reset(div);
@@ -8107,9 +8298,13 @@ function ToastContainer($$anchor, $$props) {
 //#region src/lib/center/StatusBar.svelte
 var root$1 = /* @__PURE__ */ from_html(`<span class="dk-statusbar-path svelte-1we2aji"><!> </span>`);
 var root_1$1 = /* @__PURE__ */ from_html(`<span class="dk-statusbar-path muted svelte-1we2aji">No project open</span>`);
-var root_2 = /* @__PURE__ */ from_html(`<div class="dk-statusbar svelte-1we2aji"><!></div>`);
+var root_2 = /* @__PURE__ */ from_html(`<span></span>`);
+var root_3 = /* @__PURE__ */ from_html(`<span> </span>`);
+var root_4 = /* @__PURE__ */ from_html(`<span>Index error</span>`);
+var root_5 = /* @__PURE__ */ from_html(`<div class="dk-statusbar svelte-1we2aji"><div class="dk-statusbar-left svelte-1we2aji"><!></div> <div><!></div></div>`);
 function StatusBar($$anchor, $$props) {
 	push($$props, true);
+	let indexedCount = prop($$props, "indexedCount", 3, 0), indexStatus = prop($$props, "indexStatus", 3, "idle");
 	function truncatePath(p, maxLen = 60) {
 		if (!p || p.length <= maxLen) return p ?? "";
 		const parts = p.split("/");
@@ -8122,8 +8317,10 @@ function StatusBar($$anchor, $$props) {
 		if (result.length > maxLen) result = first + "/.../" + last;
 		return result;
 	}
-	var div = root_2();
-	var node = child(div);
+	let statusClass = /* @__PURE__ */ user_derived(() => indexStatus() === "indexing" ? "status-yellow" : indexStatus() === "ready" ? "status-green" : indexStatus() === "error" ? "status-red" : "");
+	var div = root_5();
+	var div_1 = child(div);
+	var node = child(div_1);
 	var consequent = ($$anchor) => {
 		var span = root$1();
 		var node_1 = child(span);
@@ -8146,16 +8343,110 @@ function StatusBar($$anchor, $$props) {
 		if ($$props.path) $$render(consequent);
 		else $$render(alternate, -1);
 	});
+	reset(div_1);
+	var div_2 = sibling(div_1, 2);
+	var node_2 = child(div_2);
+	var consequent_1 = ($$anchor) => {
+		append($$anchor, root_2());
+	};
+	var consequent_2 = ($$anchor) => {
+		var span_3 = root_3();
+		var text_1 = child(span_3);
+		reset(span_3);
+		template_effect(() => set_text(text_1, `Indexing ${indexedCount() ?? ""} files`));
+		append($$anchor, span_3);
+	};
+	var consequent_3 = ($$anchor) => {
+		var span_4 = root_3();
+		var text_2 = child(span_4);
+		reset(span_4);
+		template_effect(() => set_text(text_2, `${indexedCount() ?? ""} docs indexed`));
+		append($$anchor, span_4);
+	};
+	var consequent_4 = ($$anchor) => {
+		append($$anchor, root_4());
+	};
+	if_block(node_2, ($$render) => {
+		if (indexStatus() === "idle" && !$$props.path) $$render(consequent_1);
+		else if (indexStatus() === "indexing") $$render(consequent_2, 1);
+		else if (indexStatus() === "ready") $$render(consequent_3, 2);
+		else if (indexStatus() === "error") $$render(consequent_4, 3);
+	});
+	reset(div_2);
 	reset(div);
+	template_effect(() => set_class(div_2, 1, `dk-statusbar-right ${get(statusClass) ?? ""}`, "svelte-1we2aji"));
 	append($$anchor, div);
 	pop();
 }
+//#endregion
+//#region bindings/changeme/pkg/scanner/models.js
+/**
+* FileEntry represents a single item found during a directory scan.
+* The backend determines isDir from the OS; the frontend should not guess it.
+*/
+var FileEntry = class FileEntry {
+	/**
+	* Creates a new FileEntry instance.
+	* @param {Partial<FileEntry>} [$$source = {}] - The source object to create the FileEntry.
+	*/
+	constructor($$source = {}) {
+		if (!("path" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["path"] = "";
+		if (!("isDir" in $$source))
+ /**
+		* @member
+		* @type {boolean}
+		*/
+		this["isDir"] = false;
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new FileEntry instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {FileEntry}
+	*/
+	static createFrom($$source = {}) {
+		return new FileEntry(typeof $$source === "string" ? JSON.parse($$source) : $$source);
+	}
+};
 //#endregion
 //#region bindings/changeme/internal/services/folderservice.js
 /**
 * FolderService handles opening local folders via the native OS directory picker.
 * @module
 */
+/**
+* GetFileTree scans the given rootPath for Markdown files and returns the
+* resulting FileEntry slice. Each entry contains the relative path and an
+* isDir flag determined by the OS, so the frontend never has to guess.
+* 
+* Excluded directories are resolved via ResolveExcludes, which checks for a
+* local .dokuignore file or falls back to global settings.
+* @param {string} rootPath
+* @returns {$CancellablePromise<scanner$0.FileEntry[]>}
+*/
+function GetFileTree(rootPath) {
+	return ByID(618366615, rootPath).then((($result) => {
+		return $$createType1($result);
+	}));
+}
+/**
+* IndexProject opens the index database for the given project root, scans all
+* Markdown files, and begins indexing them asynchronously. Progress events are
+* emitted to the frontend via Wails3 runtime events.
+* 
+* The frontend should call GetFileTree first to display the tree immediately,
+* then call IndexProject to start background indexing.
+* @param {string} rootPath
+* @returns {$CancellablePromise<void>}
+*/
+function IndexProject(rootPath) {
+	return ByID(1319153186, rootPath);
+}
 /**
 * OpenFolder opens the native OS directory picker and returns the selected path.
 * The frontend calls this when the user clicks "Browse" or presses Ctrl+O/⌘O.
@@ -8164,6 +8455,64 @@ function StatusBar($$anchor, $$props) {
 */
 function OpenFolder() {
 	return ByID(2364318539);
+}
+var $$createType0 = FileEntry.createFrom;
+var $$createType1 = Array$1($$createType0);
+//#endregion
+//#region src/lib/helpers/tree.ts
+/**
+* Converts a flat list of FileEntry items (returned by the Go scanner) into
+* a nested FileNode tree. Each entry's isDir flag is used directly — the
+* frontend never guesses whether something is a file or a directory.
+*
+* Example:
+*   [
+*     { path: "docs/guide.md",  isDir: false },
+*     { path: "docs/api/index.md", isDir: false },
+*     { path: "osmeusficheiros.md", isDir: true },  // a directory named like a file!
+*     { path: "readme.md",      isDir: false },
+*   ]
+*   →
+*   [
+*     { name: "docs", isDir: true, children: [
+*       { name: "guide.md",  path: "docs/guide.md",  isDir: false },
+*       { name: "api",       isDir: true, children: [
+*         { name: "index.md", path: "docs/api/index.md", isDir: false }
+*       ]}
+*     ]},
+*     { name: "osmeusficheiros.md", path: "osmeusficheiros.md", isDir: true },
+*     { name: "readme.md",          path: "readme.md",          isDir: false },
+*   ]
+*/
+function buildTree(entries, expanded = false) {
+	const root = [];
+	for (const entry of entries) {
+		const parts = entry.path.split("/");
+		let currentLevel = root;
+		for (let i = 0; i < parts.length; i++) {
+			const part = parts[i];
+			if (i === parts.length - 1) currentLevel.push({
+				name: part,
+				path: parts.slice(0, i + 1).join("/"),
+				isDir: entry.isDir
+			});
+			else {
+				let existing = currentLevel.find((n) => n.isDir && n.name === part);
+				if (!existing) {
+					existing = {
+						name: part,
+						path: parts.slice(0, i + 1).join("/"),
+						isDir: true,
+						expanded,
+						children: []
+					};
+					currentLevel.push(existing);
+				}
+				currentLevel = existing.children ?? [];
+			}
+		}
+	}
+	return root;
 }
 //#endregion
 //#region src/App.svelte
@@ -8249,65 +8598,9 @@ function App($$anchor, $$props) {
 		path: `docs/section-${i % 5 + 1}/document-0${90 - i}.md`,
 		active: false
 	})));
-	let tree = proxy([
-		{
-			name: "specs",
-			path: "specs",
-			isDir: true,
-			expanded: true,
-			children: [
-				{
-					name: "spec.md",
-					path: "specs/spec.md",
-					isDir: false,
-					bookmarked: true
-				},
-				{
-					name: "plan.md",
-					path: "specs/plan.md",
-					isDir: false,
-					bookmarked: false
-				},
-				{
-					name: "tasks.md",
-					path: "specs/tasks.md",
-					isDir: false,
-					bookmarked: false
-				}
-			]
-		},
-		{
-			name: "docs",
-			path: "docs",
-			isDir: true,
-			expanded: true,
-			children: [{
-				name: "architecture.md",
-				path: "docs/architecture.md",
-				isDir: false,
-				bookmarked: true
-			}, {
-				name: "quickstart.md",
-				path: "docs/quickstart.md",
-				isDir: false,
-				bookmarked: false
-			}]
-		},
-		{
-			name: "pkg",
-			path: "pkg",
-			isDir: true,
-			expanded: false,
-			children: []
-		},
-		{
-			name: "frontend",
-			path: "frontend",
-			isDir: true,
-			expanded: false,
-			children: []
-		}
-	]);
+	let tree = /* @__PURE__ */ state(proxy([]));
+	let indexCount = /* @__PURE__ */ state(0);
+	let indexStatus = /* @__PURE__ */ state("idle");
 	const toc = [
 		{
 			text: "Overview",
@@ -8377,7 +8670,7 @@ function App($$anchor, $$props) {
 			message: "Failed to index document-042.md — permission denied"
 		}
 	]));
-	let bookmarked = /* @__PURE__ */ user_derived(() => tree.flatMap((n) => n.children ?? []).filter((f) => f.bookmarked));
+	let bookmarked = /* @__PURE__ */ user_derived(() => get(tree).flatMap((n) => n.children ?? []).filter((f) => f.bookmarked));
 	function toggleAcc(section) {
 		set(accOpen, get(accOpen) === section ? "" : section, true);
 	}
@@ -8404,7 +8697,12 @@ function App($$anchor, $$props) {
 	}
 	async function openFolder() {
 		const path = await OpenFolder();
-		if (path) set(projectPath, path, true);
+		if (path) {
+			set(projectPath, path, true);
+			set(indexStatus, "indexing");
+			set(tree, buildTree(await GetFileTree(path)), true);
+			IndexProject(path);
+		}
 	}
 	function handleKeydown(e) {
 		const ctrl = e.ctrlKey || e.metaKey;
@@ -8425,6 +8723,12 @@ function App($$anchor, $$props) {
 		}
 		if (e.key === "?" && !(e.target instanceof HTMLInputElement)) set(showShortcuts, true);
 	}
+	onMount(() => {
+		On("index:progress", (ev) => {
+			set(indexCount, ev.data.done, true);
+			set(indexStatus, ev.data.state, true);
+		});
+	});
 	var fragment = root_1();
 	event("keydown", $window, handleKeydown);
 	var div = first_child(fragment);
@@ -8440,7 +8744,7 @@ function App($$anchor, $$props) {
 		const projectContent = ($$anchor) => {
 			FileTree($$anchor, {
 				get nodes() {
-					return tree;
+					return get(tree);
 				},
 				ontogglefolder: toggleFolder,
 				ontogglebookmark: toggleBookmark,
@@ -8515,9 +8819,17 @@ function App($$anchor, $$props) {
 		},
 		$$slots: { default: true }
 	});
-	StatusBar(sibling(node_4, 2), { get path() {
-		return get(projectPath);
-	} });
+	StatusBar(sibling(node_4, 2), {
+		get path() {
+			return get(projectPath);
+		},
+		get indexedCount() {
+			return get(indexCount);
+		},
+		get indexStatus() {
+			return get(indexStatus);
+		}
+	});
 	reset(div_4);
 	var node_6 = sibling(div_4, 2);
 	TableOfContents(node_6, {

@@ -1,0 +1,5 @@
+.git
+.dokumd
+node_modules
+dist
+.svelte-kit

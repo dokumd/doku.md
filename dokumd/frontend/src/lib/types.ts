@@ -6,6 +6,13 @@ export interface ProjectInfo {
   lastOpened: string
 }
 
+// ─── File Entry (from scanner) ────────────────────────────────
+
+export interface FileEntry {
+  path: string
+  isDir: boolean
+}
+
 // ─── File Tree ─────────────────────────────────────────────────
 
 export interface FileNode {

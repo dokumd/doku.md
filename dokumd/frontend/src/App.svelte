@@ -29,9 +29,12 @@
   import Bookmarks from './lib/sidebar/Bookmarks.svelte'
   import ToastContainer from './lib/feedback/ToastContainer.svelte'
   import StatusBar from './lib/center/StatusBar.svelte'
-  import { OpenFolder } from '../bindings/changeme/internal/services/folderservice.js'
+  import { OpenFolder, GetFileTree, IndexProject } from '../bindings/changeme/internal/services/folderservice.js'
   import { Minimise, Maximise, Close } from '../bindings/changeme/internal/services/windowservice.js'
   import type { Tab, FileNode, TocItem, Toast } from './lib/types.js'
+  import { buildTree } from './lib/helpers/tree.js'
+  import { onMount } from 'svelte'
+  import { Events } from '@wailsio/runtime'
 
   // ─── State ───────────────────────────────────────────────────────────────
 
@@ -65,26 +68,10 @@
           }))
   )
 
-  // Demo file tree
-  let tree = $state<FileNode[]>([
-    {
-      name: 'specs', path: 'specs', isDir: true, expanded: true,
-      children: [
-        { name: 'spec.md',  path: 'specs/spec.md',  isDir: false, bookmarked: true  },
-        { name: 'plan.md',  path: 'specs/plan.md',  isDir: false, bookmarked: false },
-        { name: 'tasks.md', path: 'specs/tasks.md', isDir: false, bookmarked: false },
-      ]
-    },
-    {
-      name: 'docs', path: 'docs', isDir: true, expanded: true,
-      children: [
-        { name: 'architecture.md', path: 'docs/architecture.md', isDir: false, bookmarked: true  },
-        { name: 'quickstart.md',   path: 'docs/quickstart.md',   isDir: false, bookmarked: false },
-      ]
-    },
-    { name: 'pkg',      path: 'pkg',      isDir: true, expanded: false, children: [] },
-    { name: 'frontend', path: 'frontend', isDir: true, expanded: false, children: [] },
-  ])
+  // File tree — populated when the user opens a folder.
+  let tree = $state<FileNode[]>([])
+  let indexCount = $state(0)
+  let indexStatus = $state<string>('idle')
 
   // Demo TOC
   const toc: TocItem[] = [
@@ -102,9 +89,9 @@
 
   // Demo toasts
   let toasts = $state<Toast[]>([
-    { id: '1', type: 'success', message: 'Bookmark added — spec.md'                               },
-    { id: '2', type: 'warning', message: 'architecture.md was modified externally. Reload?'       },
-    { id: '3', type: 'error',   message: 'Failed to index document-042.md — permission denied'    },
+    // { id: '1', type: 'success', message: 'Bookmark added — spec.md'                               },
+    // { id: '2', type: 'warning', message: 'architecture.md was modified externally. Reload?'       },
+    // { id: '3', type: 'error',   message: 'Failed to index document-042.md — permission denied'    },
   ])
 
   // ─── Derived ─────────────────────────────────────────────────────────────
@@ -146,6 +133,10 @@
     const path = await OpenFolder()
     if (path) {
       projectPath = path
+      indexStatus = 'indexing'
+      const files = await GetFileTree(path)
+      tree = buildTree(files)
+      IndexProject(path)
     }
   }
 
@@ -160,6 +151,13 @@
       showShortcuts = true
     }
   }
+
+  onMount(() => {
+    Events.On('index:progress', (ev: any) => {
+      indexCount = ev.data.done
+      indexStatus = ev.data.state
+    })
+  })
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -238,7 +236,7 @@
           <p>Open a project with <code>1000</code> files in under <code>5s</code>.</p>
         </DocumentView>
 
-        <StatusBar path={projectPath} />
+        <StatusBar path={projectPath} indexedCount={indexCount} {indexStatus} />
       </div>
 
       <TableOfContents items={toc} indexedCount={1842} status="Ready" />

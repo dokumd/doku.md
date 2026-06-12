@@ -44,6 +44,12 @@ func Init() error {
 		return fmt.Errorf("enable WAL: %w", err)
 	}
 
+	// Run global migrations (creates _migrations table, can be extended later).
+	if err := RunMigrations(db, "migrations/global"); err != nil {
+		db.Close()
+		return fmt.Errorf("global migrations: %w", err)
+	}
+
 	DB = db
 	return nil
 }

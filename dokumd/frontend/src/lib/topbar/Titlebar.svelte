@@ -28,7 +28,7 @@
     </div>
     <span class="dk-name">doku<span class="ext">.md</span></span>
   </div>
-  <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div>
+  <div class="dk-titlebarcenter" style="--wails-draggable: drag" ondblclick={Maximise}></div>
   <div class="dk-titlebar-actions">
     <button class="dk-btn" onclick={onsearch}>
       <span>Search</span> <kbd>CTRL+K</kbd>

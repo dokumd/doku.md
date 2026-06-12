@@ -11,6 +11,40 @@
 // @ts-ignore: Unused imports
 import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Create } from "@wailsio/runtime";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as scanner$0 from "../../pkg/scanner/models.js";
+
+/**
+ * GetFileTree scans the given rootPath for Markdown files and returns the
+ * resulting FileEntry slice. Each entry contains the relative path and an
+ * isDir flag determined by the OS, so the frontend never has to guess.
+ * 
+ * Excluded directories are resolved via ResolveExcludes, which checks for a
+ * local .dokuignore file or falls back to global settings.
+ * @param {string} rootPath
+ * @returns {$CancellablePromise<scanner$0.FileEntry[]>}
+ */
+export function GetFileTree(rootPath) {
+    return $Call.ByID(618366615, rootPath).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType1($result);
+    }));
+}
+
+/**
+ * IndexProject opens the index database for the given project root, scans all
+ * Markdown files, and begins indexing them asynchronously. Progress events are
+ * emitted to the frontend via Wails3 runtime events.
+ * 
+ * The frontend should call GetFileTree first to display the tree immediately,
+ * then call IndexProject to start background indexing.
+ * @param {string} rootPath
+ * @returns {$CancellablePromise<void>}
+ */
+export function IndexProject(rootPath) {
+    return $Call.ByID(1319153186, rootPath);
+}
+
 /**
  * OpenFolder opens the native OS directory picker and returns the selected path.
  * The frontend calls this when the user clicks "Browse" or presses Ctrl+O/⌘O.
@@ -20,3 +54,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 export function OpenFolder() {
     return $Call.ByID(2364318539);
 }
+
+// Private type creation functions
+const $$createType0 = scanner$0.FileEntry.createFrom;
+const $$createType1 = $Create.Array($$createType0);

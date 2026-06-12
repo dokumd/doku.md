@@ -359,14 +359,20 @@ index in sync without user intervention.
       - Reason: Monitor file system for `.md` create/modify/delete/rename events
       - Expected: `Watcher` struct using fsnotify with 250ms debounce. Filters
         non-`.md` files and hidden directories. Emits `FileEvent{Type, Path}`.
+        Watcher sends `IndexActionRemove` to the indexer queue when a file is
+        deleted, and `IndexActionIndex` when a file is created or modified.
       - Manual validation: Create/modify/delete a `.md` file → watcher logs the event
       - File: `pkg/indexer/watcher.go`
 
-- [ ] T029 [US3] Wire watcher events to indexer actions in `internal/bindings/watcher.go`
+- [ ] T029 [US3] Wire watcher events to indexer actions and frontend in `internal/bindings/watcher.go`
       - Reason: When watcher emits an event, trigger the appropriate indexer method
+        and notify the frontend so it can rerender if needed.
       - Expected: `StartWatching(projectPath)` starts the watcher. On create/modify:
         call `indexer.IndexFile()`. On delete: `indexer.RemoveFile()`. On rename:
-        remove old, index new. Errors are logged but don't crash.
+        remove old, index new. Also emits a Wails3 event `file:changed` with
+        payload `{ path: string, action: "modified" | "created" | "deleted" }`
+        so the frontend can react to changes in the currently open document.
+        Errors are logged but don't crash.
       - Manual validation: Create a new `.md` file while app is running → it appears
         in search results within 3 seconds
       - File: `internal/bindings/watcher.go`
@@ -374,16 +380,23 @@ index in sync without user intervention.
 - [ ] T030 [US3] Expose watcher status and events to frontend in `internal/bindings/watcher.go`
       - Reason: Frontend needs to react to file changes (update tree, show notifications)
       - Expected: `OnFileChange(callback)` subscribes frontend to file events via
-        Wails3 `runtime.EventsOn`. `GetWatchedPaths()` returns monitored paths.
+        Wails3 `Events.On`. `GetWatchedPaths()` returns monitored paths.
       - Manual validation: Create/delete file → frontend receives event (console.log)
       - File: `internal/bindings/watcher.go`
 
 - [ ] T031 [US3] React to file changes in the frontend in `frontend/src/stores/project.ts`
-      - Reason: File tree and open tabs should update when files change externally
-      - Expected: When a file is created → refresh file tree (add new entry).
-        When a file is deleted while open in a tab → show "File deleted" indicator.
-        When a file is modified while open → show "Reload" button.
-      - Manual validation: Add file → tree updates. Delete file → tab shows indicator.
+      - Reason: File tree and open tabs should update when files change externally.
+        If the changed file matches the active tab, rerender automatically.
+      - Expected:
+        - Listen for `file:changed` event (action: `modified`, `created`, `deleted`)
+        - If action is `modified` and `path === activeTabPath`:
+          call `GetDocument()` again to rerender the `DocumentView` with new content
+        - If action is `deleted` and `path === activeTabPath`:
+          show "File deleted" indicator on the tab (do not close the tab)
+        - If action is `created`: refresh FileTree (add new entry)
+        - If action is `deleted`: remove entry from FileTree
+      - Manual validation: Edit a file open in a tab → document rerenders automatically.
+        Delete a file open in a tab → shows "File deleted" indicator.
       - File: `frontend/src/stores/project.ts`
 
 **Checkpoint**: File changes are detected and index stays in sync automatically.
