@@ -29,7 +29,7 @@
   import Bookmarks from './lib/sidebar/Bookmarks.svelte'
   import ToastContainer from './lib/feedback/ToastContainer.svelte'
   import StatusBar from './lib/center/StatusBar.svelte'
-  import { OpenFolder, GetFileTree, IndexProject } from '../bindings/changeme/internal/services/folderservice.js'
+  import { OpenFolder, GetFileTree, IndexProject, GetDocument, SaveOpenTabs, GetOpenTabs } from '../bindings/changeme/internal/services/folderservice.js'
   import { Minimise, Maximise, Close } from '../bindings/changeme/internal/services/windowservice.js'
   import type { Tab, FileNode, TocItem, Toast } from './lib/types.js'
   import { buildTree } from './lib/helpers/tree.js'
@@ -44,48 +44,16 @@
   let overflowOpen = $state(false)
   let projectPath = $state<string | null>(null)
 
-  // Demo tabs
-  let tabs = $state<Tab[]>([
-    { id: '1', name: 'spec.md',         path: 'specs/001-markdown-doc-browser/spec.md', active: true  },
-    { id: '2', name: 'plan.md',          path: 'specs/001-markdown-doc-browser/plan.md', active: false },
-    { id: '3', name: 'tasks.md',         path: 'specs/001-markdown-doc-browser/tasks.md', active: false },
-    { id: '4', name: 'architecture.md',  path: 'docs/architecture.md', active: false },
-    { id: '5', name: 'quickstart.md',    path: 'docs/quickstart.md', active: false },
-    { id: '6', name: 'constitution.md',  path: '.specify/memory/constitution.md', active: false },
-    { id: '7', name: 'indexer.md',       path: 'specs/contracts/indexer.md', active: false },
-    { id: '8', name: 'data-model.md',    path: 'specs/001-markdown-doc-browser/data-model.md', active: false },
-    { id: '9', name: 'README.md',        path: 'README.md', active: false },
-    { id: '10', name: 'AGENTS.md',       path: 'AGENTS.md', active: false },
-  ])
-
-  // Overflow tabs (demo)
-  let overflowTabs = $state<Tab[]>(
-          Array.from({ length: 20 }, (_, i) => ({
-            id: `o${i}`,
-            name: `document-0${90 - i}.md`,
-            path: `docs/section-${(i % 5) + 1}/document-0${90 - i}.md`,
-            active: false,
-          }))
-  )
+  // Open tabs — populated when the user clicks files in the tree.
+  let tabs = $state<Tab[]>([])
+  let overflowTabs = $state<Tab[]>([])
+  let nextTabId = $state(1)
 
   // File tree — populated when the user opens a folder.
   let tree = $state<FileNode[]>([])
   let indexCount = $state(0)
   let indexStatus = $state<string>('idle')
-
-  // Demo TOC
-  const toc: TocItem[] = [
-    { text: 'Overview',        level: 1, active: true  },
-    { text: 'User stories',    level: 2, active: false },
-    { text: 'Technical stack', level: 2, active: false },
-    { text: 'Success criteria',level: 2, active: false },
-    { text: 'Requirements',    level: 1, active: false },
-    { text: 'Functional',      level: 2, active: false },
-    { text: 'Key entities',    level: 2, active: false },
-    { text: 'Assumptions',     level: 1, active: false },
-    { text: 'Edge cases',      level: 3, active: false },
-    { text: 'Out of scope',    level: 3, active: false },
-  ]
+  let activeDoc = $state<{ html: string; title: string; headings: TocItem[] } | null>(null)
 
   // Demo toasts
   let toasts = $state<Toast[]>([
@@ -99,6 +67,47 @@
   let bookmarked = $derived(
           tree.flatMap(n => n.children ?? []).filter(f => f.bookmarked)
   )
+
+  let activeTabPath = $derived(tabs.find(t => t.active)?.path ?? '')
+
+  // When the active tab changes (user clicks a different tab or opens a file),
+  // fetch and render the document.
+  // When the active tab changes (user clicks a different tab or opens a file),
+  // fetch and render the document.
+  $effect(() => {
+    const path = activeTabPath
+    if (path && projectPath) {
+      GetDocument(projectPath, path).then((result) => {
+        activeDoc = {
+          html: result.html,
+          title: result.title,
+          headings: result.headings,
+        }
+      })
+    } else {
+      activeDoc = null
+    }
+  })
+
+  // Persist open tabs whenever the tabs array changes.
+  // Uses a short debounce to avoid writing on every single-tab change.
+  let tabTimer: ReturnType<typeof setTimeout> | undefined
+  $effect(() => {
+    const currentTabs = tabs
+    if (projectPath && currentTabs.length > 0) {
+      clearTimeout(tabTimer)
+      const pp: string = projectPath
+      tabTimer = setTimeout(() => {
+        SaveOpenTabs(pp, currentTabs.map((t, i) => ({
+          relPath: t.path,
+          title: t.name,
+          position: i,
+          isActive: t.active,
+        })))
+      }, 500)
+    }
+    return () => clearTimeout(tabTimer)
+  })
 
   // ─── Handlers ────────────────────────────────────────────────────────────
 
@@ -136,8 +145,29 @@
       indexStatus = 'indexing'
       const files = await GetFileTree(path)
       tree = buildTree(files)
-      IndexProject(path)
+
+      // IndexProject cria a BD e corre as migrações antes de tentar ler os tabs.
+      await IndexProject(path)
+
+      // Restore previously open tabs for this project.
+      const saved = await GetOpenTabs(path)
+      if (saved.length > 0) {
+        tabs = saved.map((t: any, i: number) => ({
+          id: String(i + 1),
+          name: t.relPath.split('/').pop() ?? t.relPath,
+          path: t.relPath,
+          active: t.isActive ?? i === 0,
+        }))
+        nextTabId = saved.length + 1
+      } else {
+        tabs = []
+      }
     }
+  }
+
+  function scrollToHeading(id: string) {
+    const el = document.getElementById(id)
+    el?.scrollIntoView({ behavior: 'smooth' })
   }
 
   // ─── Keyboard shortcuts ───────────────────────────────────────────────────
@@ -179,7 +209,15 @@
           nodes={tree}
           ontogglefolder={toggleFolder}
           ontogglebookmark={toggleBookmark}
-          onselectfile={() => {}}
+          onselectfile={(file) => {
+            const id = String(nextTabId++)
+            const exists = tabs.find(t => t.path === file.path)
+            if (exists) {
+              tabs = tabs.map(t => ({ ...t, active: t.path === file.path }))
+            } else {
+              tabs = [...tabs.map(t => ({ ...t, active: false })), { id, name: file.name, path: file.path, active: true }]
+            }
+          }}
         />
       {/snippet}
       {#snippet bookmarksContent()}
@@ -212,34 +250,22 @@
           {overflowOpen}
         />
 
-        <DocumentView
-          title="Feature Specification: Markdown Documentation Browser"
-          path="specs/001-markdown-doc-browser"
-          date="2026-06-10"
-          status="Draft"
-          bookmarked={true}
-        >
-          <h2>Overview</h2>
-          <p>Desktop application for browsing, searching, and understanding Markdown-based technical documentation.</p>
-          <h2>User Stories</h2>
-          <p>The core experience is opening a project folder and navigating its documentation through a file tree.</p>
-          <h2>Technical Stack</h2>
-          <div class="dk-codeblock">
-            <pre><span class="ck-kw">const</span><span class="ck-tx"> stack</span> = &#123;
-              backend:  <span class="ck-st">'Wails3 + Go 1.22'</span>,
-              frontend: <span class="ck-st">'Svelte 5 + TypeScript'</span>,
-              storage:  <span class="ck-st">'SQLite + FTS5'</span>,
-              watcher:  <span class="ck-st">'fsnotify'</span>,
-            &#125;</pre>
-          </div>
-          <h2>Success Criteria</h2>
-          <p>Open a project with <code>1000</code> files in under <code>5s</code>.</p>
-        </DocumentView>
+        {#if activeDoc}
+          <DocumentView title={activeDoc.title} path={activeTabPath}>
+            {@html activeDoc.html}
+          </DocumentView>
+        {:else}
+          <DocumentView title="doku.md" path="">
+            <p style="color: var(--muted); padding: 2rem; display: flex;">
+              Open a folder or <button class="dk-btn" onclick={openFolder}>Browse</button> documentation.
+            </p>
+          </DocumentView>
+        {/if}
 
         <StatusBar path={projectPath} indexedCount={indexCount} {indexStatus} />
       </div>
 
-      <TableOfContents items={toc} indexedCount={1842} status="Ready" />
+      <TableOfContents items={activeDoc?.headings ?? []} indexedCount={indexCount} status={indexStatus === 'ready' ? 'Ready' : indexStatus === 'indexing' ? 'Indexing...' : 'Idle'} onnavigate={scrollToHeading} />
 
       <!-- ─── Search overlay ────────────────────────────────────── -->
       <SearchOverlay show={showSearch} onclose={() => showSearch = false} />

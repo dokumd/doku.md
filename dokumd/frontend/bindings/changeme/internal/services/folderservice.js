@@ -15,6 +15,24 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 // @ts-ignore: Unused imports
 import * as scanner$0 from "../../pkg/scanner/models.js";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
+/**
+ * GetDocument reads a Markdown file from disk, renders it to HTML using
+ * Goldmark, and returns the result along with extracted headings and title.
+ * The frontend calls this when the user clicks a file in the FileTree.
+ * @param {string} rootPath
+ * @param {string} relPath
+ * @returns {$CancellablePromise<$models.DocumentResult>}
+ */
+export function GetDocument(rootPath, relPath) {
+    return $Call.ByID(1216640092, rootPath, relPath).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType0($result);
+    }));
+}
+
 /**
  * GetFileTree scans the given rootPath for Markdown files and returns the
  * resulting FileEntry slice. Each entry contains the relative path and an
@@ -27,7 +45,18 @@ import * as scanner$0 from "../../pkg/scanner/models.js";
  */
 export function GetFileTree(rootPath) {
     return $Call.ByID(618366615, rootPath).then(/** @type {($result: any) => any} */(($result) => {
-        return $$createType1($result);
+        return $$createType2($result);
+    }));
+}
+
+/**
+ * GetOpenTabs retrieves the persisted open tabs for a project, ordered by position.
+ * @param {string} rootPath
+ * @returns {$CancellablePromise<$models.TabInfo[]>}
+ */
+export function GetOpenTabs(rootPath) {
+    return $Call.ByID(1132693393, rootPath).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType4($result);
     }));
 }
 
@@ -55,6 +84,20 @@ export function OpenFolder() {
     return $Call.ByID(2364318539);
 }
 
+/**
+ * SaveOpenTabs persists the list of open tabs for a project.
+ * It replaces all existing entries with the provided list.
+ * @param {string} rootPath
+ * @param {$models.TabInfo[]} tabs
+ * @returns {$CancellablePromise<void>}
+ */
+export function SaveOpenTabs(rootPath, tabs) {
+    return $Call.ByID(3088429946, rootPath, tabs);
+}
+
 // Private type creation functions
-const $$createType0 = scanner$0.FileEntry.createFrom;
-const $$createType1 = $Create.Array($$createType0);
+const $$createType0 = $models.DocumentResult.createFrom;
+const $$createType1 = scanner$0.FileEntry.createFrom;
+const $$createType2 = $Create.Array($$createType1);
+const $$createType3 = $models.TabInfo.createFrom;
+const $$createType4 = $Create.Array($$createType3);

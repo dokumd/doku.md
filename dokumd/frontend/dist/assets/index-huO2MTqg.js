@@ -242,6 +242,7 @@ var HYDRATION_ERROR = {};
 var UNINITIALIZED = Symbol("uninitialized");
 var NAMESPACE_HTML = "http://www.w3.org/1999/xhtml";
 var NAMESPACE_SVG = "http://www.w3.org/2000/svg";
+var NAMESPACE_MATHML = "http://www.w3.org/1998/Math/MathML";
 /**
 * Reading a derived belonging to a now-destroyed effect may result in stale values
 */
@@ -3301,8 +3302,6 @@ function deep_read(value, visited = /* @__PURE__ */ new Set()) {
 		}
 	}
 }
-//#endregion
-//#region node_modules/svelte/src/utils.js
 /**
 * @param {string} name
 */
@@ -4424,6 +4423,66 @@ function link(state, prev, next) {
 	else prev.next = next;
 	if (next === null) state.effect.last = prev;
 	else next.prev = prev;
+}
+/**
+* @param {Element | Text | Comment} node
+* @param {() => string | TrustedHTML} get_value
+* @param {boolean} [is_controlled]
+* @param {boolean} [svg]
+* @param {boolean} [mathml]
+* @param {boolean} [skip_warning]
+* @returns {void}
+*/
+function html(node, get_value, is_controlled = false, svg = false, mathml = false, skip_warning = false) {
+	var anchor = node;
+	/** @type {string | TrustedHTML} */
+	var value = "";
+	if (is_controlled) {
+		var parent_node = node;
+		if (hydrating) anchor = set_hydrate_node(/* @__PURE__ */ get_first_child(parent_node));
+	}
+	template_effect(() => {
+		var effect = active_effect;
+		if (value === (value = get_value() ?? "")) {
+			if (hydrating) hydrate_next();
+			return;
+		}
+		if (is_controlled && !hydrating) {
+			effect.nodes = null;
+			parent_node.innerHTML = value;
+			if (value !== "") assign_nodes(/* @__PURE__ */ get_first_child(parent_node), parent_node.lastChild);
+			return;
+		}
+		if (effect.nodes !== null) {
+			remove_effect_dom(effect.nodes.start, effect.nodes.end);
+			effect.nodes = null;
+		}
+		if (value === "") return;
+		if (hydrating) {
+			hydrate_node.data;
+			/** @type {TemplateNode | null} */
+			var next = hydrate_next();
+			var last = next;
+			while (next !== null && (next.nodeType !== 8 || next.data !== "")) {
+				last = next;
+				next = /* @__PURE__ */ get_next_sibling(next);
+			}
+			if (next === null) {
+				hydration_mismatch();
+				throw HYDRATION_ERROR;
+			}
+			assign_nodes(hydrate_node, last);
+			anchor = set_hydrate_node(next);
+			return;
+		}
+		var wrapper = create_element(svg ? "svg" : mathml ? "math" : "template", svg ? NAMESPACE_SVG : mathml ? NAMESPACE_MATHML : void 0);
+		wrapper.innerHTML = value;
+		/** @type {DocumentFragment | Element} */
+		var node = svg || mathml ? wrapper : 		/** @type {HTMLTemplateElement} */ wrapper.content;
+		assign_nodes(/* @__PURE__ */ get_first_child(node), node.lastChild);
+		if (svg || mathml) while (/* @__PURE__ */ get_first_child(node)) anchor.before(/* @__PURE__ */ get_first_child(node));
+		else anchor.before(node);
+	});
 }
 //#endregion
 //#region node_modules/svelte/src/internal/client/dom/blocks/slot.js
@@ -7869,23 +7928,27 @@ function Minimise() {
 var root$10 = /* @__PURE__ */ from_html(`<div class="dk-titlebar"><div class="dk-brand"><div class="dk-logo"><svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white"><rect x="1" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"></rect><circle cx="9.75" cy="9.75" r="2.25"></circle></svg></div> <span class="dk-name">doku<span class="ext">.md</span></span></div> <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div> <div class="dk-titlebar-actions"><button class="dk-btn"><span>Search</span> <kbd>CTRL+K</kbd></button> <button class="dk-btn"><span>Browse</span> <kbd>CTRL+O</kbd></button></div> <button class="dk-btn" style="padding: 5px 10px"><span>?</span></button> <div class="dk-dots"><div class="dk-dot"><!></div> <div class="dk-dot"><!></div> <div class="dk-dot"><!></div></div></div>`);
 function Titlebar($$anchor, $$props) {
 	var div = root$10();
-	var div_1 = sibling(child(div), 4);
-	var button = child(div_1);
+	var div_1 = sibling(child(div), 2);
+	var div_2 = sibling(div_1, 2);
+	var button = child(div_2);
 	var button_1 = sibling(button, 2);
-	reset(div_1);
-	var button_2 = sibling(div_1, 2);
-	var div_2 = sibling(button_2, 2);
-	var div_3 = child(div_2);
-	Minus(child(div_3), { size: 11 });
-	reset(div_3);
-	var div_4 = sibling(div_3, 2);
-	Square(child(div_4), { size: 11 });
+	reset(div_2);
+	var button_2 = sibling(div_2, 2);
+	var div_3 = sibling(button_2, 2);
+	var div_4 = child(div_3);
+	Minus(child(div_4), { size: 11 });
 	reset(div_4);
 	var div_5 = sibling(div_4, 2);
-	X(child(div_5), { size: 11 });
+	Square(child(div_5), { size: 11 });
 	reset(div_5);
-	reset(div_2);
+	var div_6 = sibling(div_5, 2);
+	X(child(div_6), { size: 11 });
+	reset(div_6);
+	reset(div_3);
 	reset(div);
+	delegated("dblclick", div_1, function(...$$args) {
+		Maximise?.apply(this, $$args);
+	});
 	delegated("click", button, function(...$$args) {
 		$$props.onsearch?.apply(this, $$args);
 	});
@@ -7895,18 +7958,18 @@ function Titlebar($$anchor, $$props) {
 	delegated("click", button_2, function(...$$args) {
 		$$props.onshortcuts?.apply(this, $$args);
 	});
-	delegated("click", div_3, function(...$$args) {
+	delegated("click", div_4, function(...$$args) {
 		Minimise?.apply(this, $$args);
 	});
-	delegated("click", div_4, function(...$$args) {
+	delegated("click", div_5, function(...$$args) {
 		Maximise?.apply(this, $$args);
 	});
-	delegated("click", div_5, function(...$$args) {
+	delegated("click", div_6, function(...$$args) {
 		Close?.apply(this, $$args);
 	});
 	append($$anchor, div);
 }
-delegate(["click"]);
+delegate(["dblclick", "click"]);
 //#endregion
 //#region src/lib/center/TabBar.svelte
 var root$9 = /* @__PURE__ */ from_html(`<div role="tab" tabindex="0"><!> <span> </span> <span class="close" role="button" tabindex="0"><!></span></div>`);
@@ -7987,54 +8050,41 @@ function TabBar($$anchor, $$props) {
 delegate(["click"]);
 //#endregion
 //#region src/lib/center/DocumentView.svelte
-var root$8 = /* @__PURE__ */ from_html(`<span role="button" tabindex="0"><!></span>`);
-var root_1$6 = /* @__PURE__ */ from_html(`<div class="dk-doc"><h1> </h1> <div class="meta"><span> </span> <span>·</span> <span> </span> <span>·</span> <span> </span> <!></div> <!></div>`);
+var root$8 = /* @__PURE__ */ from_html(`<h1> </h1> <div class="meta"><span> </span></div>`, 1);
+var root_1$6 = /* @__PURE__ */ from_html(`<div class="dk-doc"><!> <!></div>`);
 function DocumentView($$anchor, $$props) {
+	let title = prop($$props, "title", 3, ""), path = prop($$props, "path", 3, "");
 	var div = root_1$6();
-	var h1 = child(div);
-	var text = child(h1, true);
-	reset(h1);
-	var div_1 = sibling(h1, 2);
-	var span = child(div_1);
-	var text_1 = child(span, true);
-	reset(span);
-	var span_1 = sibling(span, 4);
-	var text_2 = child(span_1, true);
-	reset(span_1);
-	var span_2 = sibling(span_1, 4);
-	var text_3 = child(span_2, true);
-	reset(span_2);
-	var node = sibling(span_2, 2);
+	var node = child(div);
 	var consequent = ($$anchor) => {
-		var span_3 = root$8();
-		Star_filled(child(span_3), { size: 16 });
-		reset(span_3);
-		template_effect(() => set_class(span_3, 1, `star-doc ${$$props.bookmarked ? "on" : ""}`));
-		delegated("click", span_3, function(...$$args) {
-			$$props.onbookmark?.apply(this, $$args);
+		var fragment = root$8();
+		var h1 = first_child(fragment);
+		var text = child(h1, true);
+		reset(h1);
+		var div_1 = sibling(h1, 2);
+		var span = child(div_1);
+		var text_1 = child(span, true);
+		reset(span);
+		reset(div_1);
+		template_effect(() => {
+			set_text(text, title());
+			set_text(text_1, path());
 		});
-		append($$anchor, span_3);
+		append($$anchor, fragment);
 	};
 	if_block(node, ($$render) => {
-		if ($$props.onbookmark) $$render(consequent);
+		if (title()) $$render(consequent);
 	});
-	reset(div_1);
-	slot(sibling(div_1, 2), $$props, "default", {}, null);
+	slot(sibling(node, 2), $$props, "default", {}, null);
 	reset(div);
-	template_effect(() => {
-		set_text(text, $$props.title);
-		set_text(text_1, $$props.path);
-		set_text(text_2, $$props.date);
-		set_text(text_3, $$props.status);
-	});
 	append($$anchor, div);
 }
-delegate(["click"]);
 //#endregion
 //#region src/lib/center/TableOfContents.svelte
-var root$7 = /* @__PURE__ */ from_html(`<div> </div>`);
+var root$7 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"> </div>`);
 var root_1$5 = /* @__PURE__ */ from_html(`<div class="dk-right"><div class="dk-toc"><div class="dk-toc-title">On this page</div> <!></div> <div class="dk-status"><span> </span> <span class="dk-badge"> </span></div></div>`);
 function TableOfContents($$anchor, $$props) {
+	push($$props, true);
 	var div = root_1$5();
 	var div_1 = child(div);
 	each(sibling(child(div_1), 2), 17, () => $$props.items, index, ($$anchor, item) => {
@@ -8045,6 +8095,7 @@ function TableOfContents($$anchor, $$props) {
 			set_class(div_2, 1, `dk-toc-item ${get(item).active ? "active" : ""} ${get(item).level === 2 ? "l2" : get(item).level === 3 ? "l3" : ""}`);
 			set_text(text, get(item).text);
 		});
+		delegated("click", div_2, () => $$props.onnavigate?.(get(item).id));
 		append($$anchor, div_2);
 	});
 	reset(div_1);
@@ -8062,7 +8113,9 @@ function TableOfContents($$anchor, $$props) {
 		set_text(text_2, $$props.status);
 	});
 	append($$anchor, div);
+	pop();
 }
+delegate(["click"]);
 //#endregion
 //#region src/lib/sidebar/Accordion.svelte
 var root$6 = /* @__PURE__ */ from_html(`<div class="dk-acc-body open"><!></div>`);
@@ -8414,11 +8467,159 @@ var FileEntry = class FileEntry {
 	}
 };
 //#endregion
+//#region bindings/changeme/pkg/markdown/models.js
+/**
+* Heading represents a single heading extracted from a Markdown document.
+*/
+var Heading = class Heading {
+	/**
+	* Creates a new Heading instance.
+	* @param {Partial<Heading>} [$$source = {}] - The source object to create the Heading.
+	*/
+	constructor($$source = {}) {
+		if (!("text" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["text"] = "";
+		if (!("level" in $$source))
+ /**
+		* @member
+		* @type {number}
+		*/
+		this["level"] = 0;
+		if (!("id" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["id"] = "";
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new Heading instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {Heading}
+	*/
+	static createFrom($$source = {}) {
+		return new Heading(typeof $$source === "string" ? JSON.parse($$source) : $$source);
+	}
+};
+//#endregion
+//#region bindings/changeme/internal/services/models.js
+/**
+* DocumentResult is the response returned by GetDocument.
+*/
+var DocumentResult = class DocumentResult {
+	/**
+	* Creates a new DocumentResult instance.
+	* @param {Partial<DocumentResult>} [$$source = {}] - The source object to create the DocumentResult.
+	*/
+	constructor($$source = {}) {
+		if (!("html" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["html"] = "";
+		if (!("title" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["title"] = "";
+		if (!("headings" in $$source))
+ /**
+		* @member
+		* @type {markdown$0.Heading[]}
+		*/
+		this["headings"] = [];
+		if (!("relPath" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["relPath"] = "";
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new DocumentResult instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {DocumentResult}
+	*/
+	static createFrom($$source = {}) {
+		const $$createField2_0 = $$createType1$1;
+		let $$parsedSource = typeof $$source === "string" ? JSON.parse($$source) : $$source;
+		if ("headings" in $$parsedSource) $$parsedSource["headings"] = $$createField2_0($$parsedSource["headings"]);
+		return new DocumentResult($$parsedSource);
+	}
+};
+/**
+* TabInfo represents a single open tab for persistence.
+*/
+var TabInfo = class TabInfo {
+	/**
+	* Creates a new TabInfo instance.
+	* @param {Partial<TabInfo>} [$$source = {}] - The source object to create the TabInfo.
+	*/
+	constructor($$source = {}) {
+		if (!("relPath" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["relPath"] = "";
+		if (!("title" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["title"] = "";
+		if (!("position" in $$source))
+ /**
+		* @member
+		* @type {number}
+		*/
+		this["position"] = 0;
+		if (!("isActive" in $$source))
+ /**
+		* @member
+		* @type {boolean}
+		*/
+		this["isActive"] = false;
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new TabInfo instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {TabInfo}
+	*/
+	static createFrom($$source = {}) {
+		return new TabInfo(typeof $$source === "string" ? JSON.parse($$source) : $$source);
+	}
+};
+var $$createType0$1 = Heading.createFrom;
+var $$createType1$1 = Array$1($$createType0$1);
+//#endregion
 //#region bindings/changeme/internal/services/folderservice.js
 /**
 * FolderService handles opening local folders via the native OS directory picker.
 * @module
 */
+/**
+* GetDocument reads a Markdown file from disk, renders it to HTML using
+* Goldmark, and returns the result along with extracted headings and title.
+* The frontend calls this when the user clicks a file in the FileTree.
+* @param {string} rootPath
+* @param {string} relPath
+* @returns {$CancellablePromise<$models.DocumentResult>}
+*/
+function GetDocument(rootPath, relPath) {
+	return ByID(1216640092, rootPath, relPath).then((($result) => {
+		return $$createType0($result);
+	}));
+}
 /**
 * GetFileTree scans the given rootPath for Markdown files and returns the
 * resulting FileEntry slice. Each entry contains the relative path and an
@@ -8431,7 +8632,17 @@ var FileEntry = class FileEntry {
 */
 function GetFileTree(rootPath) {
 	return ByID(618366615, rootPath).then((($result) => {
-		return $$createType1($result);
+		return $$createType2($result);
+	}));
+}
+/**
+* GetOpenTabs retrieves the persisted open tabs for a project, ordered by position.
+* @param {string} rootPath
+* @returns {$CancellablePromise<$models.TabInfo[]>}
+*/
+function GetOpenTabs(rootPath) {
+	return ByID(1132693393, rootPath).then((($result) => {
+		return $$createType4($result);
 	}));
 }
 /**
@@ -8456,8 +8667,21 @@ function IndexProject(rootPath) {
 function OpenFolder() {
 	return ByID(2364318539);
 }
-var $$createType0 = FileEntry.createFrom;
-var $$createType1 = Array$1($$createType0);
+/**
+* SaveOpenTabs persists the list of open tabs for a project.
+* It replaces all existing entries with the provided list.
+* @param {string} rootPath
+* @param {$models.TabInfo[]} tabs
+* @returns {$CancellablePromise<void>}
+*/
+function SaveOpenTabs(rootPath, tabs) {
+	return ByID(3088429946, rootPath, tabs);
+}
+var $$createType0 = DocumentResult.createFrom;
+var $$createType1 = FileEntry.createFrom;
+var $$createType2 = Array$1($$createType1);
+var $$createType3 = TabInfo.createFrom;
+var $$createType4 = Array$1($$createType3);
 //#endregion
 //#region src/lib/helpers/tree.ts
 /**
@@ -8516,12 +8740,7 @@ function buildTree(entries, expanded = false) {
 }
 //#endregion
 //#region src/App.svelte
-var root = /* @__PURE__ */ from_html(`<h2>Overview</h2> <p>Desktop application for browsing, searching, and understanding Markdown-based technical documentation.</p> <h2>User Stories</h2> <p>The core experience is opening a project folder and navigating its documentation through a file tree.</p> <h2>Technical Stack</h2> <div class="dk-codeblock"><pre><span class="ck-kw">const</span><span class="ck-tx"> stack</span> = &#123;
-              backend:  <span class="ck-st">'Wails3 + Go 1.22'</span>,
-              frontend: <span class="ck-st">'Svelte 5 + TypeScript'</span>,
-              storage:  <span class="ck-st">'SQLite + FTS5'</span>,
-              watcher:  <span class="ck-st">'fsnotify'</span>,
-            &#125;</pre></div> <h2>Success Criteria</h2> <p>Open a project with <code>1000</code> files in under <code>5s</code>.</p>`, 1);
+var root = /* @__PURE__ */ from_html(`<p style="color: var(--muted); padding: 2rem;">Open a folder to browse documentation.</p>`);
 var root_1 = /* @__PURE__ */ from_html(`<div class="dk"><!> <div class="dk-body"><div class="dk-left"><!></div> <div class="dk-wrap"><div class="dk-center"><!> <!> <!></div> <!> <!> <!></div></div></div> <!>`, 1);
 function App($$anchor, $$props) {
 	push($$props, true);
@@ -8530,147 +8749,44 @@ function App($$anchor, $$props) {
 	let showShortcuts = /* @__PURE__ */ state(false);
 	let overflowOpen = /* @__PURE__ */ state(false);
 	let projectPath = /* @__PURE__ */ state(null);
-	let tabs = /* @__PURE__ */ state(proxy([
-		{
-			id: "1",
-			name: "spec.md",
-			path: "specs/001-markdown-doc-browser/spec.md",
-			active: true
-		},
-		{
-			id: "2",
-			name: "plan.md",
-			path: "specs/001-markdown-doc-browser/plan.md",
-			active: false
-		},
-		{
-			id: "3",
-			name: "tasks.md",
-			path: "specs/001-markdown-doc-browser/tasks.md",
-			active: false
-		},
-		{
-			id: "4",
-			name: "architecture.md",
-			path: "docs/architecture.md",
-			active: false
-		},
-		{
-			id: "5",
-			name: "quickstart.md",
-			path: "docs/quickstart.md",
-			active: false
-		},
-		{
-			id: "6",
-			name: "constitution.md",
-			path: ".specify/memory/constitution.md",
-			active: false
-		},
-		{
-			id: "7",
-			name: "indexer.md",
-			path: "specs/contracts/indexer.md",
-			active: false
-		},
-		{
-			id: "8",
-			name: "data-model.md",
-			path: "specs/001-markdown-doc-browser/data-model.md",
-			active: false
-		},
-		{
-			id: "9",
-			name: "README.md",
-			path: "README.md",
-			active: false
-		},
-		{
-			id: "10",
-			name: "AGENTS.md",
-			path: "AGENTS.md",
-			active: false
-		}
-	]));
-	let overflowTabs = proxy(Array.from({ length: 20 }, (_, i) => ({
-		id: `o${i}`,
-		name: `document-0${90 - i}.md`,
-		path: `docs/section-${i % 5 + 1}/document-0${90 - i}.md`,
-		active: false
-	})));
+	let tabs = /* @__PURE__ */ state(proxy([]));
+	let overflowTabs = proxy([]);
+	let nextTabId = /* @__PURE__ */ state(1);
 	let tree = /* @__PURE__ */ state(proxy([]));
 	let indexCount = /* @__PURE__ */ state(0);
 	let indexStatus = /* @__PURE__ */ state("idle");
-	const toc = [
-		{
-			text: "Overview",
-			level: 1,
-			active: true
-		},
-		{
-			text: "User stories",
-			level: 2,
-			active: false
-		},
-		{
-			text: "Technical stack",
-			level: 2,
-			active: false
-		},
-		{
-			text: "Success criteria",
-			level: 2,
-			active: false
-		},
-		{
-			text: "Requirements",
-			level: 1,
-			active: false
-		},
-		{
-			text: "Functional",
-			level: 2,
-			active: false
-		},
-		{
-			text: "Key entities",
-			level: 2,
-			active: false
-		},
-		{
-			text: "Assumptions",
-			level: 1,
-			active: false
-		},
-		{
-			text: "Edge cases",
-			level: 3,
-			active: false
-		},
-		{
-			text: "Out of scope",
-			level: 3,
-			active: false
-		}
-	];
-	let toasts = /* @__PURE__ */ state(proxy([
-		{
-			id: "1",
-			type: "success",
-			message: "Bookmark added — spec.md"
-		},
-		{
-			id: "2",
-			type: "warning",
-			message: "architecture.md was modified externally. Reload?"
-		},
-		{
-			id: "3",
-			type: "error",
-			message: "Failed to index document-042.md — permission denied"
-		}
-	]));
+	let activeDoc = /* @__PURE__ */ state(null);
+	let toasts = /* @__PURE__ */ state(proxy([]));
 	let bookmarked = /* @__PURE__ */ user_derived(() => get(tree).flatMap((n) => n.children ?? []).filter((f) => f.bookmarked));
+	let activeTabPath = /* @__PURE__ */ user_derived(() => get(tabs).find((t) => t.active)?.path ?? "");
+	user_effect(() => {
+		const path = get(activeTabPath);
+		if (path && get(projectPath)) GetDocument(get(projectPath), path).then((result) => {
+			set(activeDoc, {
+				html: result.html,
+				title: result.title,
+				headings: result.headings
+			}, true);
+		});
+		else set(activeDoc, null);
+	});
+	let tabTimer;
+	user_effect(() => {
+		const currentTabs = get(tabs);
+		if (get(projectPath) && currentTabs.length > 0) {
+			clearTimeout(tabTimer);
+			const pp = get(projectPath);
+			tabTimer = setTimeout(() => {
+				SaveOpenTabs(pp, currentTabs.map((t, i) => ({
+					relPath: t.path,
+					title: t.name,
+					position: i,
+					isActive: t.active
+				})));
+			}, 500);
+		}
+		return () => clearTimeout(tabTimer);
+	});
 	function toggleAcc(section) {
 		set(accOpen, get(accOpen) === section ? "" : section, true);
 	}
@@ -8701,8 +8817,21 @@ function App($$anchor, $$props) {
 			set(projectPath, path, true);
 			set(indexStatus, "indexing");
 			set(tree, buildTree(await GetFileTree(path)), true);
-			IndexProject(path);
+			await IndexProject(path);
+			const saved = await GetOpenTabs(path);
+			if (saved.length > 0) {
+				set(tabs, saved.map((t, i) => ({
+					id: String(i + 1),
+					name: t.relPath.split("/").pop() ?? t.relPath,
+					path: t.relPath,
+					active: t.isActive ?? i === 0
+				})), true);
+				set(nextTabId, saved.length + 1);
+			} else set(tabs, [], true);
 		}
+	}
+	function scrollToHeading(id) {
+		document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 	}
 	function handleKeydown(e) {
 		const ctrl = e.ctrlKey || e.metaKey;
@@ -8748,7 +8877,22 @@ function App($$anchor, $$props) {
 				},
 				ontogglefolder: toggleFolder,
 				ontogglebookmark: toggleBookmark,
-				onselectfile: () => {}
+				onselectfile: (file) => {
+					const id = String(update$1(nextTabId));
+					if (get(tabs).find((t) => t.path === file.path)) set(tabs, get(tabs).map((t) => ({
+						...t,
+						active: t.path === file.path
+					})), true);
+					else set(tabs, [...get(tabs).map((t) => ({
+						...t,
+						active: false
+					})), {
+						id,
+						name: file.name,
+						path: file.path,
+						active: true
+					}], true);
+				}
 			});
 		};
 		const bookmarksContent = ($$anchor) => {
@@ -8806,18 +8950,35 @@ function App($$anchor, $$props) {
 		}
 	});
 	var node_4 = sibling(node_3, 2);
-	DocumentView(node_4, {
-		title: "Feature Specification: Markdown Documentation Browser",
-		path: "specs/001-markdown-doc-browser",
-		date: "2026-06-10",
-		status: "Draft",
-		bookmarked: true,
-		children: ($$anchor, $$slotProps) => {
-			var fragment_3 = root();
-			next(14);
-			append($$anchor, fragment_3);
-		},
-		$$slots: { default: true }
+	var consequent = ($$anchor) => {
+		DocumentView($$anchor, {
+			get title() {
+				return get(activeDoc).title;
+			},
+			get path() {
+				return get(activeTabPath);
+			},
+			children: ($$anchor, $$slotProps) => {
+				var fragment_4 = comment();
+				html(first_child(fragment_4), () => get(activeDoc).html);
+				append($$anchor, fragment_4);
+			},
+			$$slots: { default: true }
+		});
+	};
+	var alternate = ($$anchor) => {
+		DocumentView($$anchor, {
+			title: "doku.md",
+			path: "",
+			children: ($$anchor, $$slotProps) => {
+				append($$anchor, root());
+			},
+			$$slots: { default: true }
+		});
+	};
+	if_block(node_4, ($$render) => {
+		if (get(activeDoc)) $$render(consequent);
+		else $$render(alternate, -1);
 	});
 	StatusBar(sibling(node_4, 2), {
 		get path() {
@@ -8831,22 +8992,31 @@ function App($$anchor, $$props) {
 		}
 	});
 	reset(div_4);
-	var node_6 = sibling(div_4, 2);
-	TableOfContents(node_6, {
-		get items() {
-			return toc;
-		},
-		indexedCount: 1842,
-		status: "Ready"
-	});
-	var node_7 = sibling(node_6, 2);
-	SearchOverlay(node_7, {
+	var node_7 = sibling(div_4, 2);
+	{
+		let $0 = /* @__PURE__ */ user_derived(() => get(activeDoc)?.headings ?? []);
+		let $1 = /* @__PURE__ */ user_derived(() => get(indexStatus) === "ready" ? "Ready" : get(indexStatus) === "indexing" ? "Indexing..." : "Idle");
+		TableOfContents(node_7, {
+			get items() {
+				return get($0);
+			},
+			get indexedCount() {
+				return get(indexCount);
+			},
+			get status() {
+				return get($1);
+			},
+			onnavigate: scrollToHeading
+		});
+	}
+	var node_8 = sibling(node_7, 2);
+	SearchOverlay(node_8, {
 		get show() {
 			return get(showSearch);
 		},
 		onclose: () => set(showSearch, false)
 	});
-	ShortcutsOverlay(sibling(node_7, 2), {
+	ShortcutsOverlay(sibling(node_8, 2), {
 		get show() {
 			return get(showShortcuts);
 		},

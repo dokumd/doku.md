@@ -178,28 +178,21 @@ func (idx *Indexer) removeFile(relPath string) {
 func (idx *Indexer) trackProgress(success bool) {
 	idx.mu.Lock()
 	idx.status.Done++
-	if idx.status.State == "idle" {
+	if idx.status.State == "idle" || idx.status.State == "" {
 		idx.status.State = "indexing"
 	}
+	done := idx.status.Done
+	total := idx.status.Total
 	idx.mu.Unlock()
 
-	if idx.onProgress != nil {
-		st := idx.GetStatus()
-		idx.onProgress(st.Done, st.Total, st.State)
-	}
+	idx.onProgress(done, total, "indexing")
 
 	// When all files are processed, mark as ready.
-	idx.mu.Lock()
-	if idx.status.Done >= idx.status.Total {
-		state := "ready"
-		// If less than total were processed successfully, still mark ready.
-		idx.status.State = state
+	if done >= total {
+		idx.mu.Lock()
+		idx.status.State = "ready"
 		idx.mu.Unlock()
-		if idx.onProgress != nil {
-			idx.onProgress(idx.status.Done, idx.status.Total, state)
-		}
-	} else {
-		idx.mu.Unlock()
+		idx.onProgress(done, total, "ready")
 	}
 }
 

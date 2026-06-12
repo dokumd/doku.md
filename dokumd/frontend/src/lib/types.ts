@@ -45,6 +45,7 @@ export interface Bookmark {
 export interface TocItem {
   text: string
   level: number
+  id: string
   active?: boolean
 }
 

@@ -8,3 +8,8 @@ export {
     FolderService,
     WindowService
 };
+
+export {
+    DocumentResult,
+    TabInfo
+} from "./models.js";
