@@ -11,6 +11,7 @@ import (
 	"changeme/pkg/indexer"
 	"changeme/pkg/markdown"
 	"changeme/pkg/scanner"
+	"changeme/pkg/search"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -214,5 +215,53 @@ func (s *FolderService) GetOpenTabs(rootPath string) ([]TabInfo, error) {
 	}
 
 	return tabs, rows.Err()
+}
+
+// openIndexDB opens the per-project index database for the given root path.
+func openIndexDB(rootPath string) (*sql.DB, error) {
+	dbPath := filepath.Join(rootPath, ".dokumd", "index.sqlite")
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, err
+	}
+	// Prevent SQL_BUSY errors when the indexer is writing concurrently.
+	db.Exec("PRAGMA busy_timeout=5000")
+	return db, nil
+}
+
+// SearchAll runs a full-text search across all indexed documents in the project.
+func (s *FolderService) SearchAll(rootPath string, query string, limit int) ([]search.Result, error) {
+	db, err := openIndexDB(rootPath)
+	if err != nil {
+		log.Printf("SearchAll: open index db: %v", err)
+		return nil, err
+	}
+	defer db.Close()
+	results, err := search.Search(db, query, limit)
+	if err != nil {
+		log.Printf("SearchAll: query=%q root=%s err=%v", query, rootPath, err)
+		return nil, err
+	}
+	return results, nil
+}
+
+// SearchByTitle restricts the search to document titles only.
+func (s *FolderService) SearchByTitle(rootPath string, query string, limit int) ([]search.Result, error) {
+	db, err := openIndexDB(rootPath)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	return search.SearchByTitle(db, query, limit)
+}
+
+// SearchByPath searches for documents whose relative path contains the query.
+func (s *FolderService) SearchByPath(rootPath string, query string, limit int) ([]search.Result, error) {
+	db, err := openIndexDB(rootPath)
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+	return search.SearchByPath(db, query, limit)
 }
 

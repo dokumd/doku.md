@@ -4859,6 +4859,7 @@ var LINK_TAG = IS_XHTML ? "link" : "LINK";
 var INPUT_TAG = IS_XHTML ? "input" : "INPUT";
 var OPTION_TAG = IS_XHTML ? "option" : "OPTION";
 var SELECT_TAG = IS_XHTML ? "select" : "SELECT";
+var PROGRESS_TAG = IS_XHTML ? "progress" : "PROGRESS";
 /**
 * The value/checked attribute in the template actually corresponds to the defaultValue property, so we need
 * to remove it upon hydration to avoid a bug when someone resets the form value.
@@ -4885,6 +4886,15 @@ function remove_input_defaults(input) {
 	/** @type {any} */ input[FORM_RESET_HANDLER] = remove_defaults;
 	queue_micro_task(remove_defaults);
 	add_form_reset_listener();
+}
+/**
+* @param {Element} element
+* @param {any} value
+*/
+function set_value(element, value) {
+	var attributes = get_attributes(element);
+	if (attributes.value === (attributes.value = value ?? void 0) || element.value === value && (value !== 0 || element.nodeName !== PROGRESS_TAG)) return;
+	element.value = value ?? "";
 }
 /**
 * Sets the `selected` attribute on an `option` element.
@@ -5893,28 +5903,6 @@ function ShortcutsOverlay($$anchor, $$props) {
 		delegated("click", button, function(...$$args) {
 			$$props.onclose?.apply(this, $$args);
 		});
-		append($$anchor, div);
-	};
-	if_block(node, ($$render) => {
-		if ($$props.show) $$render(consequent);
-	});
-	append($$anchor, fragment);
-}
-delegate(["click"]);
-//#endregion
-//#region src/lib/overlays/SearchOverlay.svelte
-var root$11 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-cmd-box"><div class="dk-cmd-input"><span>FTS5 full-text search<span class="cursor"></span></span></div> <div class="dk-cmd-results"><div class="dk-cmd-r selected"><span>FTS5 indexing strategy</span> <span class="path">specs/plan.md</span></div> <div class="dk-cmd-r"><span>SQLite FTS5 schema design</span> <span class="path">docs/architecture.md</span></div> <div class="dk-cmd-r"><span>Search performance goals</span> <span class="path">specs/spec.md</span></div> <div class="dk-cmd-r"><span>pkg/search/search.go contract</span> <span class="path">contracts/indexer.md</span></div></div> <div class="dk-cmd-footer"><div class="dk-cmd-hint"><kbd>↵</kbd> open</div> <div class="dk-cmd-hint"><kbd>↑↓</kbd> navigate</div> <div class="dk-cmd-hint"><kbd>esc</kbd> close</div></div></div></div>`);
-function SearchOverlay($$anchor, $$props) {
-	var fragment = comment();
-	var node = first_child(fragment);
-	var consequent = ($$anchor) => {
-		var div = root$11();
-		var div_1 = child(div);
-		reset(div);
-		delegated("click", div, function(...$$args) {
-			$$props.onclose?.apply(this, $$args);
-		});
-		delegated("click", div_1, (e) => e.stopPropagation());
 		append($$anchor, div);
 	};
 	if_block(node, ($$render) => {
@@ -7896,6 +7884,435 @@ function loadOptionalScript(url) {
 }
 loadOptionalScript("/wails/custom.js");
 //#endregion
+//#region bindings/changeme/pkg/scanner/models.js
+/**
+* FileEntry represents a single item found during a directory scan.
+* The backend determines isDir from the OS; the frontend should not guess it.
+*/
+var FileEntry = class FileEntry {
+	/**
+	* Creates a new FileEntry instance.
+	* @param {Partial<FileEntry>} [$$source = {}] - The source object to create the FileEntry.
+	*/
+	constructor($$source = {}) {
+		if (!("path" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["path"] = "";
+		if (!("isDir" in $$source))
+ /**
+		* @member
+		* @type {boolean}
+		*/
+		this["isDir"] = false;
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new FileEntry instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {FileEntry}
+	*/
+	static createFrom($$source = {}) {
+		return new FileEntry(typeof $$source === "string" ? JSON.parse($$source) : $$source);
+	}
+};
+//#endregion
+//#region bindings/changeme/pkg/search/models.js
+/**
+* Result represents a single search hit.
+*/
+var Result = class Result {
+	/**
+	* Creates a new Result instance.
+	* @param {Partial<Result>} [$$source = {}] - The source object to create the Result.
+	*/
+	constructor($$source = {}) {
+		if (!("relPath" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["relPath"] = "";
+		if (!("title" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["title"] = "";
+		if (!("snippet" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["snippet"] = "";
+		if (!("score" in $$source))
+ /**
+		* @member
+		* @type {number}
+		*/
+		this["score"] = 0;
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new Result instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {Result}
+	*/
+	static createFrom($$source = {}) {
+		return new Result(typeof $$source === "string" ? JSON.parse($$source) : $$source);
+	}
+};
+//#endregion
+//#region bindings/changeme/pkg/markdown/models.js
+/**
+* Heading represents a single heading extracted from a Markdown document.
+*/
+var Heading = class Heading {
+	/**
+	* Creates a new Heading instance.
+	* @param {Partial<Heading>} [$$source = {}] - The source object to create the Heading.
+	*/
+	constructor($$source = {}) {
+		if (!("text" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["text"] = "";
+		if (!("level" in $$source))
+ /**
+		* @member
+		* @type {number}
+		*/
+		this["level"] = 0;
+		if (!("id" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["id"] = "";
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new Heading instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {Heading}
+	*/
+	static createFrom($$source = {}) {
+		return new Heading(typeof $$source === "string" ? JSON.parse($$source) : $$source);
+	}
+};
+//#endregion
+//#region bindings/changeme/internal/services/models.js
+/**
+* DocumentResult is the response returned by GetDocument.
+*/
+var DocumentResult = class DocumentResult {
+	/**
+	* Creates a new DocumentResult instance.
+	* @param {Partial<DocumentResult>} [$$source = {}] - The source object to create the DocumentResult.
+	*/
+	constructor($$source = {}) {
+		if (!("html" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["html"] = "";
+		if (!("title" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["title"] = "";
+		if (!("headings" in $$source))
+ /**
+		* @member
+		* @type {markdown$0.Heading[]}
+		*/
+		this["headings"] = [];
+		if (!("relPath" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["relPath"] = "";
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new DocumentResult instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {DocumentResult}
+	*/
+	static createFrom($$source = {}) {
+		const $$createField2_0 = $$createType1$1;
+		let $$parsedSource = typeof $$source === "string" ? JSON.parse($$source) : $$source;
+		if ("headings" in $$parsedSource) $$parsedSource["headings"] = $$createField2_0($$parsedSource["headings"]);
+		return new DocumentResult($$parsedSource);
+	}
+};
+/**
+* TabInfo represents a single open tab for persistence.
+*/
+var TabInfo = class TabInfo {
+	/**
+	* Creates a new TabInfo instance.
+	* @param {Partial<TabInfo>} [$$source = {}] - The source object to create the TabInfo.
+	*/
+	constructor($$source = {}) {
+		if (!("relPath" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["relPath"] = "";
+		if (!("title" in $$source))
+ /**
+		* @member
+		* @type {string}
+		*/
+		this["title"] = "";
+		if (!("position" in $$source))
+ /**
+		* @member
+		* @type {number}
+		*/
+		this["position"] = 0;
+		if (!("isActive" in $$source))
+ /**
+		* @member
+		* @type {boolean}
+		*/
+		this["isActive"] = false;
+		Object.assign(this, $$source);
+	}
+	/**
+	* Creates a new TabInfo instance from a string or object.
+	* @param {any} [$$source = {}]
+	* @returns {TabInfo}
+	*/
+	static createFrom($$source = {}) {
+		return new TabInfo(typeof $$source === "string" ? JSON.parse($$source) : $$source);
+	}
+};
+var $$createType0$1 = Heading.createFrom;
+var $$createType1$1 = Array$1($$createType0$1);
+//#endregion
+//#region bindings/changeme/internal/services/folderservice.js
+/**
+* FolderService handles opening local folders via the native OS directory picker.
+* @module
+*/
+/**
+* GetDocument reads a Markdown file from disk, renders it to HTML using
+* Goldmark, and returns the result along with extracted headings and title.
+* The frontend calls this when the user clicks a file in the FileTree.
+* @param {string} rootPath
+* @param {string} relPath
+* @returns {$CancellablePromise<$models.DocumentResult>}
+*/
+function GetDocument(rootPath, relPath) {
+	return ByID(1216640092, rootPath, relPath).then((($result) => {
+		return $$createType0($result);
+	}));
+}
+/**
+* GetFileTree scans the given rootPath for Markdown files and returns the
+* resulting FileEntry slice. Each entry contains the relative path and an
+* isDir flag determined by the OS, so the frontend never has to guess.
+* 
+* Excluded directories are resolved via ResolveExcludes, which checks for a
+* local .dokuignore file or falls back to global settings.
+* @param {string} rootPath
+* @returns {$CancellablePromise<scanner$0.FileEntry[]>}
+*/
+function GetFileTree(rootPath) {
+	return ByID(618366615, rootPath).then((($result) => {
+		return $$createType2($result);
+	}));
+}
+/**
+* GetOpenTabs retrieves the persisted open tabs for a project, ordered by position.
+* @param {string} rootPath
+* @returns {$CancellablePromise<$models.TabInfo[]>}
+*/
+function GetOpenTabs(rootPath) {
+	return ByID(1132693393, rootPath).then((($result) => {
+		return $$createType4($result);
+	}));
+}
+/**
+* IndexProject opens the index database for the given project root, scans all
+* Markdown files, and begins indexing them asynchronously. Progress events are
+* emitted to the frontend via Wails3 runtime events.
+* 
+* The frontend should call GetFileTree first to display the tree immediately,
+* then call IndexProject to start background indexing.
+* @param {string} rootPath
+* @returns {$CancellablePromise<void>}
+*/
+function IndexProject(rootPath) {
+	return ByID(1319153186, rootPath);
+}
+/**
+* OpenFolder opens the native OS directory picker and returns the selected path.
+* The frontend calls this when the user clicks "Browse" or presses Ctrl+O/⌘O.
+* Returns the absolute path to the selected folder, or an empty string if cancelled.
+* @returns {$CancellablePromise<string>}
+*/
+function OpenFolder() {
+	return ByID(2364318539);
+}
+/**
+* SaveOpenTabs persists the list of open tabs for a project.
+* It replaces all existing entries with the provided list.
+* @param {string} rootPath
+* @param {$models.TabInfo[]} tabs
+* @returns {$CancellablePromise<void>}
+*/
+function SaveOpenTabs(rootPath, tabs) {
+	return ByID(3088429946, rootPath, tabs);
+}
+/**
+* SearchAll runs a full-text search across all indexed documents in the project.
+* @param {string} rootPath
+* @param {string} query
+* @param {number} limit
+* @returns {$CancellablePromise<search$0.Result[]>}
+*/
+function SearchAll(rootPath, query, limit) {
+	return ByID(1874471182, rootPath, query, limit).then((($result) => {
+		return $$createType6($result);
+	}));
+}
+var $$createType0 = DocumentResult.createFrom;
+var $$createType1 = FileEntry.createFrom;
+var $$createType2 = Array$1($$createType1);
+var $$createType3 = TabInfo.createFrom;
+var $$createType4 = Array$1($$createType3);
+var $$createType5 = Result.createFrom;
+var $$createType6 = Array$1($$createType5);
+//#endregion
+//#region src/lib/overlays/SearchOverlay.svelte
+var root$11 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"><span> </span> <span class="path"> </span></div>`);
+var root_1$8 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted"> </span></div>`);
+var root_2$3 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Open a folder to search.</span></div>`);
+var root_3$2 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Type to search documentation...</span></div>`);
+var root_4$1 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-cmd-box"><div class="dk-cmd-input"><input type="text" placeholder="Search documentation..."/></div> <div class="dk-cmd-results"><!></div> <div class="dk-cmd-footer"><div class="dk-cmd-hint"><kbd>↵</kbd> open</div> <div class="dk-cmd-hint"><kbd>↑↓</kbd> navigate</div> <div class="dk-cmd-hint"><kbd>esc</kbd> close</div></div></div></div>`);
+function SearchOverlay($$anchor, $$props) {
+	push($$props, true);
+	let query = /* @__PURE__ */ state("");
+	let results = /* @__PURE__ */ state(proxy([]));
+	let selectedIndex = /* @__PURE__ */ state(0);
+	let debounceTimer;
+	function handleInput(e) {
+		const target = e.target;
+		set(query, target.value, true);
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => doSearch(get(query)), 300);
+	}
+	async function doSearch(q) {
+		if (!q.trim() || !$$props.projectPath) {
+			set(results, [], true);
+			set(selectedIndex, 0);
+			return;
+		}
+		set(results, await SearchAll($$props.projectPath, q, 50), true);
+		set(selectedIndex, 0);
+	}
+	function handleKeydown(e) {
+		if (e.key === "ArrowDown") {
+			e.preventDefault();
+			set(selectedIndex, Math.min(get(selectedIndex) + 1, get(results).length - 1), true);
+		} else if (e.key === "ArrowUp") {
+			e.preventDefault();
+			set(selectedIndex, Math.max(get(selectedIndex) - 1, 0), true);
+		} else if (e.key === "Enter" && get(results)[get(selectedIndex)]) {
+			e.preventDefault();
+			$$props.onselect(get(results)[get(selectedIndex)]);
+		}
+	}
+	var fragment = comment();
+	var node = first_child(fragment);
+	var consequent_3 = ($$anchor) => {
+		var div = root_4$1();
+		var div_1 = child(div);
+		var div_2 = child(div_1);
+		var input = child(div_2);
+		remove_input_defaults(input);
+		autofocus(input, true);
+		reset(div_2);
+		var div_3 = sibling(div_2, 2);
+		var node_1 = child(div_3);
+		var consequent = ($$anchor) => {
+			var fragment_1 = comment();
+			each(first_child(fragment_1), 17, () => get(results), index, ($$anchor, result, i) => {
+				var div_4 = root$11();
+				var span = child(div_4);
+				var text = child(span, true);
+				reset(span);
+				var span_1 = sibling(span, 2);
+				var text_1 = child(span_1, true);
+				reset(span_1);
+				reset(div_4);
+				template_effect(() => {
+					set_class(div_4, 1, `dk-cmd-r ${i === get(selectedIndex) ? "selected" : ""}`);
+					set_text(text, get(result).title || get(result).relPath);
+					set_text(text_1, get(result).relPath);
+				});
+				delegated("click", div_4, () => $$props.onselect(get(result)));
+				append($$anchor, div_4);
+			});
+			append($$anchor, fragment_1);
+		};
+		var consequent_1 = ($$anchor) => {
+			var div_5 = root_1$8();
+			var span_2 = child(div_5);
+			var text_2 = child(span_2);
+			reset(span_2);
+			reset(div_5);
+			template_effect(() => set_text(text_2, `No results for "${get(query) ?? ""}"`));
+			append($$anchor, div_5);
+		};
+		var consequent_2 = ($$anchor) => {
+			append($$anchor, root_2$3());
+		};
+		var alternate = ($$anchor) => {
+			append($$anchor, root_3$2());
+		};
+		if_block(node_1, ($$render) => {
+			if (get(results).length > 0) $$render(consequent);
+			else if (get(query) && $$props.projectPath) $$render(consequent_1, 1);
+			else if (!$$props.projectPath) $$render(consequent_2, 2);
+			else $$render(alternate, -1);
+		});
+		reset(div_3);
+		next(2);
+		reset(div_1);
+		reset(div);
+		template_effect(() => set_value(input, get(query)));
+		delegated("click", div, function(...$$args) {
+			$$props.onclose?.apply(this, $$args);
+		});
+		delegated("click", div_1, (e) => e.stopPropagation());
+		delegated("input", input, handleInput);
+		delegated("keydown", input, handleKeydown);
+		append($$anchor, div);
+	};
+	if_block(node, ($$render) => {
+		if ($$props.show) $$render(consequent_3);
+	});
+	append($$anchor, fragment);
+	pop();
+}
+delegate([
+	"click",
+	"input",
+	"keydown"
+]);
+//#endregion
 //#region bindings/changeme/internal/services/windowservice.js
 /**
 * WindowService exposes native window operations (minimise, maximise, close) to the frontend.
@@ -8432,257 +8849,6 @@ function StatusBar($$anchor, $$props) {
 	pop();
 }
 //#endregion
-//#region bindings/changeme/pkg/scanner/models.js
-/**
-* FileEntry represents a single item found during a directory scan.
-* The backend determines isDir from the OS; the frontend should not guess it.
-*/
-var FileEntry = class FileEntry {
-	/**
-	* Creates a new FileEntry instance.
-	* @param {Partial<FileEntry>} [$$source = {}] - The source object to create the FileEntry.
-	*/
-	constructor($$source = {}) {
-		if (!("path" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["path"] = "";
-		if (!("isDir" in $$source))
- /**
-		* @member
-		* @type {boolean}
-		*/
-		this["isDir"] = false;
-		Object.assign(this, $$source);
-	}
-	/**
-	* Creates a new FileEntry instance from a string or object.
-	* @param {any} [$$source = {}]
-	* @returns {FileEntry}
-	*/
-	static createFrom($$source = {}) {
-		return new FileEntry(typeof $$source === "string" ? JSON.parse($$source) : $$source);
-	}
-};
-//#endregion
-//#region bindings/changeme/pkg/markdown/models.js
-/**
-* Heading represents a single heading extracted from a Markdown document.
-*/
-var Heading = class Heading {
-	/**
-	* Creates a new Heading instance.
-	* @param {Partial<Heading>} [$$source = {}] - The source object to create the Heading.
-	*/
-	constructor($$source = {}) {
-		if (!("text" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["text"] = "";
-		if (!("level" in $$source))
- /**
-		* @member
-		* @type {number}
-		*/
-		this["level"] = 0;
-		if (!("id" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["id"] = "";
-		Object.assign(this, $$source);
-	}
-	/**
-	* Creates a new Heading instance from a string or object.
-	* @param {any} [$$source = {}]
-	* @returns {Heading}
-	*/
-	static createFrom($$source = {}) {
-		return new Heading(typeof $$source === "string" ? JSON.parse($$source) : $$source);
-	}
-};
-//#endregion
-//#region bindings/changeme/internal/services/models.js
-/**
-* DocumentResult is the response returned by GetDocument.
-*/
-var DocumentResult = class DocumentResult {
-	/**
-	* Creates a new DocumentResult instance.
-	* @param {Partial<DocumentResult>} [$$source = {}] - The source object to create the DocumentResult.
-	*/
-	constructor($$source = {}) {
-		if (!("html" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["html"] = "";
-		if (!("title" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["title"] = "";
-		if (!("headings" in $$source))
- /**
-		* @member
-		* @type {markdown$0.Heading[]}
-		*/
-		this["headings"] = [];
-		if (!("relPath" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["relPath"] = "";
-		Object.assign(this, $$source);
-	}
-	/**
-	* Creates a new DocumentResult instance from a string or object.
-	* @param {any} [$$source = {}]
-	* @returns {DocumentResult}
-	*/
-	static createFrom($$source = {}) {
-		const $$createField2_0 = $$createType1$1;
-		let $$parsedSource = typeof $$source === "string" ? JSON.parse($$source) : $$source;
-		if ("headings" in $$parsedSource) $$parsedSource["headings"] = $$createField2_0($$parsedSource["headings"]);
-		return new DocumentResult($$parsedSource);
-	}
-};
-/**
-* TabInfo represents a single open tab for persistence.
-*/
-var TabInfo = class TabInfo {
-	/**
-	* Creates a new TabInfo instance.
-	* @param {Partial<TabInfo>} [$$source = {}] - The source object to create the TabInfo.
-	*/
-	constructor($$source = {}) {
-		if (!("relPath" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["relPath"] = "";
-		if (!("title" in $$source))
- /**
-		* @member
-		* @type {string}
-		*/
-		this["title"] = "";
-		if (!("position" in $$source))
- /**
-		* @member
-		* @type {number}
-		*/
-		this["position"] = 0;
-		if (!("isActive" in $$source))
- /**
-		* @member
-		* @type {boolean}
-		*/
-		this["isActive"] = false;
-		Object.assign(this, $$source);
-	}
-	/**
-	* Creates a new TabInfo instance from a string or object.
-	* @param {any} [$$source = {}]
-	* @returns {TabInfo}
-	*/
-	static createFrom($$source = {}) {
-		return new TabInfo(typeof $$source === "string" ? JSON.parse($$source) : $$source);
-	}
-};
-var $$createType0$1 = Heading.createFrom;
-var $$createType1$1 = Array$1($$createType0$1);
-//#endregion
-//#region bindings/changeme/internal/services/folderservice.js
-/**
-* FolderService handles opening local folders via the native OS directory picker.
-* @module
-*/
-/**
-* GetDocument reads a Markdown file from disk, renders it to HTML using
-* Goldmark, and returns the result along with extracted headings and title.
-* The frontend calls this when the user clicks a file in the FileTree.
-* @param {string} rootPath
-* @param {string} relPath
-* @returns {$CancellablePromise<$models.DocumentResult>}
-*/
-function GetDocument(rootPath, relPath) {
-	return ByID(1216640092, rootPath, relPath).then((($result) => {
-		return $$createType0($result);
-	}));
-}
-/**
-* GetFileTree scans the given rootPath for Markdown files and returns the
-* resulting FileEntry slice. Each entry contains the relative path and an
-* isDir flag determined by the OS, so the frontend never has to guess.
-* 
-* Excluded directories are resolved via ResolveExcludes, which checks for a
-* local .dokuignore file or falls back to global settings.
-* @param {string} rootPath
-* @returns {$CancellablePromise<scanner$0.FileEntry[]>}
-*/
-function GetFileTree(rootPath) {
-	return ByID(618366615, rootPath).then((($result) => {
-		return $$createType2($result);
-	}));
-}
-/**
-* GetOpenTabs retrieves the persisted open tabs for a project, ordered by position.
-* @param {string} rootPath
-* @returns {$CancellablePromise<$models.TabInfo[]>}
-*/
-function GetOpenTabs(rootPath) {
-	return ByID(1132693393, rootPath).then((($result) => {
-		return $$createType4($result);
-	}));
-}
-/**
-* IndexProject opens the index database for the given project root, scans all
-* Markdown files, and begins indexing them asynchronously. Progress events are
-* emitted to the frontend via Wails3 runtime events.
-* 
-* The frontend should call GetFileTree first to display the tree immediately,
-* then call IndexProject to start background indexing.
-* @param {string} rootPath
-* @returns {$CancellablePromise<void>}
-*/
-function IndexProject(rootPath) {
-	return ByID(1319153186, rootPath);
-}
-/**
-* OpenFolder opens the native OS directory picker and returns the selected path.
-* The frontend calls this when the user clicks "Browse" or presses Ctrl+O/⌘O.
-* Returns the absolute path to the selected folder, or an empty string if cancelled.
-* @returns {$CancellablePromise<string>}
-*/
-function OpenFolder() {
-	return ByID(2364318539);
-}
-/**
-* SaveOpenTabs persists the list of open tabs for a project.
-* It replaces all existing entries with the provided list.
-* @param {string} rootPath
-* @param {$models.TabInfo[]} tabs
-* @returns {$CancellablePromise<void>}
-*/
-function SaveOpenTabs(rootPath, tabs) {
-	return ByID(3088429946, rootPath, tabs);
-}
-var $$createType0 = DocumentResult.createFrom;
-var $$createType1 = FileEntry.createFrom;
-var $$createType2 = Array$1($$createType1);
-var $$createType3 = TabInfo.createFrom;
-var $$createType4 = Array$1($$createType3);
-//#endregion
 //#region src/lib/helpers/tree.ts
 /**
 * Converts a flat list of FileEntry items (returned by the Go scanner) into
@@ -8740,7 +8906,7 @@ function buildTree(entries, expanded = false) {
 }
 //#endregion
 //#region src/App.svelte
-var root = /* @__PURE__ */ from_html(`<p style="color: var(--muted); padding: 2rem;">Open a folder to browse documentation.</p>`);
+var root = /* @__PURE__ */ from_html(`<p style="color: var(--muted); padding: 2rem; display: flex;">Open a folder or <button class="dk-btn">Browse</button> documentation.</p>`);
 var root_1 = /* @__PURE__ */ from_html(`<div class="dk"><!> <div class="dk-body"><div class="dk-left"><!></div> <div class="dk-wrap"><div class="dk-center"><!> <!> <!></div> <!> <!> <!></div></div></div> <!>`, 1);
 function App($$anchor, $$props) {
 	push($$props, true);
@@ -8971,7 +9137,12 @@ function App($$anchor, $$props) {
 			title: "doku.md",
 			path: "",
 			children: ($$anchor, $$slotProps) => {
-				append($$anchor, root());
+				var p = root();
+				var button = sibling(child(p));
+				next();
+				reset(p);
+				delegated("click", button, openFolder);
+				append($$anchor, p);
 			},
 			$$slots: { default: true }
 		});
@@ -9014,7 +9185,29 @@ function App($$anchor, $$props) {
 		get show() {
 			return get(showSearch);
 		},
-		onclose: () => set(showSearch, false)
+		onclose: () => set(showSearch, false),
+		get projectPath() {
+			return get(projectPath);
+		},
+		onselect: (result) => {
+			set(showSearch, false);
+			const id = String(update$1(nextTabId));
+			const path = result.relPath;
+			const name = path.split("/").pop() ?? path;
+			if (get(tabs).find((t) => t.path === path)) set(tabs, get(tabs).map((t) => ({
+				...t,
+				active: t.path === path
+			})), true);
+			else set(tabs, [...get(tabs).map((t) => ({
+				...t,
+				active: false
+			})), {
+				id,
+				name,
+				path,
+				active: true
+			}], true);
+		}
 	});
 	ShortcutsOverlay(sibling(node_8, 2), {
 		get show() {
@@ -9034,6 +9227,7 @@ function App($$anchor, $$props) {
 	append($$anchor, fragment);
 	pop();
 }
+delegate(["click"]);
 //#endregion
 //#region src/main.ts
 mount(App, { target: document.getElementById("app") });

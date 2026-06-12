@@ -14,6 +14,9 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
 import * as scanner$0 from "../../pkg/scanner/models.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as search$0 from "../../pkg/search/models.js";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
@@ -95,9 +98,50 @@ export function SaveOpenTabs(rootPath, tabs) {
     return $Call.ByID(3088429946, rootPath, tabs);
 }
 
+/**
+ * SearchAll runs a full-text search across all indexed documents in the project.
+ * @param {string} rootPath
+ * @param {string} query
+ * @param {number} limit
+ * @returns {$CancellablePromise<search$0.Result[]>}
+ */
+export function SearchAll(rootPath, query, limit) {
+    return $Call.ByID(1874471182, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType6($result);
+    }));
+}
+
+/**
+ * SearchByPath searches for documents whose relative path contains the query.
+ * @param {string} rootPath
+ * @param {string} query
+ * @param {number} limit
+ * @returns {$CancellablePromise<search$0.Result[]>}
+ */
+export function SearchByPath(rootPath, query, limit) {
+    return $Call.ByID(2720517277, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType6($result);
+    }));
+}
+
+/**
+ * SearchByTitle restricts the search to document titles only.
+ * @param {string} rootPath
+ * @param {string} query
+ * @param {number} limit
+ * @returns {$CancellablePromise<search$0.Result[]>}
+ */
+export function SearchByTitle(rootPath, query, limit) {
+    return $Call.ByID(1802336640, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
+        return $$createType6($result);
+    }));
+}
+
 // Private type creation functions
 const $$createType0 = $models.DocumentResult.createFrom;
 const $$createType1 = scanner$0.FileEntry.createFrom;
 const $$createType2 = $Create.Array($$createType1);
 const $$createType3 = $models.TabInfo.createFrom;
 const $$createType4 = $Create.Array($$createType3);
+const $$createType5 = search$0.Result.createFrom;
+const $$createType6 = $Create.Array($$createType5);

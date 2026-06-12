@@ -415,7 +415,7 @@ kbd {
 
 @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
 
-.dk-cmd-results { padding: 8px; }
+.dk-cmd-results { padding: 8px; max-height: 60vh; overflow-y: auto; }
 
 .dk-cmd-r { padding: 11px 13px; border-radius: 7px; display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--text-2); cursor: pointer; }
 

@@ -268,7 +268,23 @@
       <TableOfContents items={activeDoc?.headings ?? []} indexedCount={indexCount} status={indexStatus === 'ready' ? 'Ready' : indexStatus === 'indexing' ? 'Indexing...' : 'Idle'} onnavigate={scrollToHeading} />
 
       <!-- ─── Search overlay ────────────────────────────────────── -->
-      <SearchOverlay show={showSearch} onclose={() => showSearch = false} />
+      <SearchOverlay
+        show={showSearch}
+        onclose={() => showSearch = false}
+        {projectPath}
+        onselect={(result: any) => {
+          showSearch = false
+          const id = String(nextTabId++)
+          const path = result.relPath
+          const name = path.split('/').pop() ?? path
+          const exists = tabs.find(t => t.path === path)
+          if (exists) {
+            tabs = tabs.map(t => ({ ...t, active: t.path === path }))
+          } else {
+            tabs = [...tabs.map(t => ({ ...t, active: false })), { id, name, path, active: true }]
+          }
+        }}
+      />
 
       <ShortcutsOverlay show={showShortcuts} onclose={() => showShortcuts = false} />
 

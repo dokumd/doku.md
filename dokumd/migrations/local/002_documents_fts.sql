@@ -7,5 +7,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS documents_fts USING fts5(
     content,
     path UNINDEXED,
     content=documents,
-    content_rowid=id
+    content_rowid=id,
+    tokenize='trigram'
 );
