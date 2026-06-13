@@ -130,6 +130,21 @@
     toasts = toasts.filter(t => t.id !== id)
   }
 
+  // Percorre a árvore recursivamente para encontrar um FileNode pelo path.
+  // Necessário porque a tree pode ter profundidade >1 (ex: docs/sub/file.md),
+  // e o flatMap simples só desce um nível. Sem esta função, a estrela de
+  // bookmark no DocumentView não consegue encontrar nós em sub-subpastas.
+  function findNodeByPath(nodes: FileNode[], targetPath: string): FileNode | null {
+    for (const node of nodes) {
+      if (!node.isDir && node.path === targetPath) return node
+      if (node.children) {
+        const found = findNodeByPath(node.children, targetPath)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
   async function openFolder(path?: string) {
     const folderPath = path ?? await OpenFolder()
     if (folderPath) {
@@ -279,7 +294,17 @@
         />
 
         {#if activeDoc}
-          <DocumentView title={activeDoc.title} path={activeTabPath}>
+          <DocumentView
+            title={activeDoc.title}
+            path={activeTabPath}
+            bookmarked={bookmarksList.some(b => b.relPath === activeTabPath)}
+            onbookmark={() => {
+              // Usa findNodeByPath em vez de flatMap para suportar
+              // ficheiros em sub-subpastas (profundidade >1).
+              const file = findNodeByPath(tree, activeTabPath)
+              if (file) toggleBookmark(file)
+            }}
+          >
             {@html activeDoc.html}
           </DocumentView>
         {:else}

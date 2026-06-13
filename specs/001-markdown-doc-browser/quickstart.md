@@ -125,6 +125,16 @@ done
 # Expected: Open completes in <5s, search returns results in <1s
 ```
 
+## Configuração de exclusões
+
+Por padrão, algumas pastas são excluídas da indexação (`.git`, `node_modules`,
+`dist`, etc.). Se precisares de indexar ficheiros dentro dessas pastas, edita o
+ficheiro `.dokumd/.dokuignore` dentro da pasta aberta e remove a linha
+correspondente. Na próxima abertura da pasta, as alterações são aplicadas.
+
+Para repor as exclusões padrão, apaga o `.dokumd/.dokuignore` — será recriado
+automaticamente com os valores predefinidos.
+
 ## Running Tests
 
 ```bash

@@ -518,7 +518,8 @@ and persisting recent projects list.
         - **Ctrl+Tab / ⌘Tab** — navigate to the next tab
         - **Ctrl+Shift+Tab / ⌘Shift+Tab** — navigate to the previous tab
         - **Ctrl+D / ⌘D** — toggle bookmark on the currently open document
-        - **Escape** — close the search overlay
+        - **Ctrl+F / ⌘F** — open local search in current document
+        - **Escape** — close the search overlay or local search
       - File: `frontend/src/App.svelte`
 
 - [ ] T040b [P] Add keyboard shortcut help overlay in `frontend/src/lib/overlays/ShortcutsOverlay.svelte` and `frontend/src/App.svelte`
