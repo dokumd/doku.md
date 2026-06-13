@@ -37,6 +37,8 @@
   let activeDoc = $state<{ html: string; title: string; headings: TocItem[] } | null>(null)
   let recentFolders = $state<{ path: string; lastOpened: string }[]>([])
   let bookmarksList = $state<{ relPath: string; title: string }[]>([])
+  let showLocalSearch = $state(false)
+  let localSearchQuery = $state('')
 
   // Demo toasts
   let toasts = $state<Toast[]>([
@@ -59,6 +61,8 @@
   // fetch and render the document.
   $effect(() => {
     const path = activeTabPath
+    // Ao mudar de tab, fechar o local search e limpar estado.
+    showLocalSearch = false
     if (path && projectPath) {
       GetDocument(projectPath, path).then((result) => {
         activeDoc = {
@@ -184,7 +188,8 @@
     const ctrl = e.ctrlKey || e.metaKey
     if (ctrl && e.key === 'k') { e.preventDefault(); showSearch = true;    return }
     if (ctrl && e.key === 'o') { e.preventDefault(); openFolder();        return }
-    if (e.key === 'Escape')    { showSearch = false; showShortcuts = false; return }
+    if (ctrl && e.key === 'f') { e.preventDefault(); if (activeDoc) showLocalSearch = true; return }
+    if (e.key === 'Escape')    { showSearch = false; showShortcuts = false; showLocalSearch = false; return }
     if (e.key === '?' && !(e.target instanceof HTMLInputElement)) {
       showShortcuts = true
     }
@@ -299,11 +304,13 @@
             path={activeTabPath}
             bookmarked={bookmarksList.some(b => b.relPath === activeTabPath)}
             onbookmark={() => {
-              // Usa findNodeByPath em vez de flatMap para suportar
-              // ficheiros em sub-subpastas (profundidade >1).
               const file = findNodeByPath(tree, activeTabPath)
               if (file) toggleBookmark(file)
             }}
+            showLocalSearch={showLocalSearch && activeDoc !== null}
+            localSearchQuery={localSearchQuery}
+            onlocalSearchQuery={(q: string) => localSearchQuery = q}
+            oncloseLocalSearch={() => showLocalSearch = false}
           >
             {@html activeDoc.html}
           </DocumentView>

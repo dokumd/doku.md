@@ -449,6 +449,12 @@ function queue_micro_task(fn) {
 	micro_tasks.push(fn);
 }
 /**
+* Synchronously run any queued tasks.
+*/
+function flush_tasks() {
+	while (micro_tasks.length > 0) run_micro_tasks();
+}
+/**
 * @param {unknown} error
 */
 function handle_error(error) {
@@ -1841,6 +1847,31 @@ var Batch = class Batch {
 		this.linked = false;
 	}
 };
+/**
+* Synchronously flush any pending updates.
+* Returns void if no callback is provided, otherwise returns the result of calling the callback.
+* @template [T=void]
+* @param {(() => T) | undefined} [fn]
+* @returns {T}
+*/
+function flushSync(fn) {
+	var was_flushing_sync = is_flushing_sync;
+	is_flushing_sync = true;
+	try {
+		var result;
+		if (fn) {
+			if (current_batch !== null && !current_batch.is_fork) current_batch.flush();
+			result = fn();
+		}
+		while (true) {
+			flush_tasks();
+			if (current_batch === null) return result;
+			current_batch.flush();
+		}
+	} finally {
+		is_flushing_sync = was_flushing_sync;
+	}
+}
 function infinite_loop_guard() {
 	try {
 		effect_update_depth_exceeded();
@@ -3159,6 +3190,18 @@ function update_effect(effect) {
 		is_updating_effect = was_updating_effect;
 		active_effect = previous_effect;
 	}
+}
+/**
+* Returns a promise that resolves once any pending state changes have been applied.
+* @returns {Promise<void>}
+*/
+async function tick() {
+	if (async_mode_flag) return new Promise((f) => {
+		requestAnimationFrame(() => f());
+		setTimeout(() => f());
+	});
+	await Promise.resolve();
+	flushSync();
 }
 /**
 * @template V
@@ -5519,7 +5562,7 @@ var defaultAttributes = {
 };
 //#endregion
 //#region node_modules/@tabler/icons-svelte/dist/Icon.svelte
-var root$14 = /* @__PURE__ */ from_svg(`<svg><!><!></svg>`);
+var root$15 = /* @__PURE__ */ from_svg(`<svg><!><!></svg>`);
 function Icon($$anchor, $$props) {
 	const $$sanitized_props = legacy_rest_props($$props, [
 		"children",
@@ -5543,7 +5586,7 @@ function Icon($$anchor, $$props) {
 	let stroke = prop($$props, "stroke", 8, 2);
 	let iconNode = prop($$props, "iconNode", 8);
 	init();
-	var svg = root$14();
+	var svg = root$15();
 	attribute_effect(svg, () => ({
 		...defaultAttributes[type()],
 		...$$restProps,
@@ -5933,13 +5976,13 @@ function Star_filled($$anchor, $$props) {
 }
 //#endregion
 //#region src/lib/overlays/ShortcutsOverlay.svelte
-var root$13 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-shortcuts-box"><div class="dk-shortcuts-title">Keyboard Shortcuts <button><!></button></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Navigation</div> <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>O</kbd></span></div> <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>K</kbd></span></div> <div class="dk-shortcut-row"><span>Find in document</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>F</kbd></span></div> <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>W</kbd></span></div> <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Reopen last closed tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>T</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Bookmarks</div> <div class="dk-shortcut-row"><span>Toggle bookmark</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>D</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">General</div> <div class="dk-shortcut-row"><span>Keyboard shortcuts</span><span class="dk-shortcut-keys"><kbd>?</kbd></span></div> <div class="dk-shortcut-row"><span>Close overlay</span><span class="dk-shortcut-keys"><kbd>ESC</kbd></span></div></div></div></div>`);
+var root$14 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-shortcuts-box"><div class="dk-shortcuts-title">Keyboard Shortcuts <button><!></button></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Navigation</div> <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>O</kbd></span></div> <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>K</kbd></span></div> <div class="dk-shortcut-row"><span>Find in document</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>F</kbd></span></div> <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>W</kbd></span></div> <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Reopen last closed tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>T</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Bookmarks</div> <div class="dk-shortcut-row"><span>Toggle bookmark</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>D</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">General</div> <div class="dk-shortcut-row"><span>Keyboard shortcuts</span><span class="dk-shortcut-keys"><kbd>?</kbd></span></div> <div class="dk-shortcut-row"><span>Close overlay</span><span class="dk-shortcut-keys"><kbd>ESC</kbd></span></div></div></div></div>`);
 function ShortcutsOverlay($$anchor, $$props) {
 	let modifier = prop($$props, "modifier", 3, "CTRL");
 	var fragment = comment();
 	var node = first_child(fragment);
 	var consequent = ($$anchor) => {
-		var div = root$13();
+		var div = root$14();
 		var div_1 = child(div);
 		var div_2 = child(div_1);
 		var button = sibling(child(div_2));
@@ -8470,9 +8513,9 @@ var $$createType9 = Result.createFrom;
 var $$createType10 = Array$1($$createType9);
 //#endregion
 //#region src/lib/overlays/SearchOverlay.svelte
-var root$12 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"><span> </span> <span class="path"> </span></div>`);
+var root$13 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"><span> </span> <span class="path"> </span></div>`);
 var root_1$9 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted"> </span></div>`);
-var root_2$3 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Open a folder to search.</span></div>`);
+var root_2$4 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Open a folder to search.</span></div>`);
 var root_3$2 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Type to search documentation...</span></div>`);
 var root_4$2 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-cmd-box"><div class="dk-cmd-input"><input type="text" placeholder="Search documentation..."/></div> <div class="dk-cmd-results"><!></div> <div class="dk-cmd-footer"><div class="dk-cmd-hint"><kbd>↵</kbd> open</div> <div class="dk-cmd-hint"><kbd>↑↓</kbd> navigate</div> <div class="dk-cmd-hint"><kbd>esc</kbd> close</div></div></div></div>`);
 function SearchOverlay($$anchor, $$props) {
@@ -8530,7 +8573,7 @@ function SearchOverlay($$anchor, $$props) {
 		var consequent = ($$anchor) => {
 			var fragment_1 = comment();
 			each(first_child(fragment_1), 17, () => get(results), index, ($$anchor, result, i) => {
-				var div_4 = root$12();
+				var div_4 = root$13();
 				var span = child(div_4);
 				var text = child(span, true);
 				reset(span);
@@ -8558,7 +8601,7 @@ function SearchOverlay($$anchor, $$props) {
 			append($$anchor, div_5);
 		};
 		var consequent_2 = ($$anchor) => {
-			append($$anchor, root_2$3());
+			append($$anchor, root_2$4());
 		};
 		var alternate = ($$anchor) => {
 			append($$anchor, root_3$2());
@@ -8623,9 +8666,9 @@ function Minimise() {
 }
 //#endregion
 //#region src/lib/topbar/Titlebar.svelte
-var root$11 = /* @__PURE__ */ from_html(`<div class="dk-titlebar"><div class="dk-brand"><div class="dk-logo"><svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white"><rect x="1" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"></rect><circle cx="9.75" cy="9.75" r="2.25"></circle></svg></div> <span class="dk-name">doku<span class="ext">.md</span></span></div> <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div> <div class="dk-titlebar-actions"><button class="dk-btn"><span>Search</span> <kbd>CTRL+K</kbd></button> <button class="dk-btn"><span>Browse</span> <kbd>CTRL+O</kbd></button></div> <button class="dk-btn" style="padding: 5px 10px"><span>?</span></button> <div class="dk-dots"><div class="dk-dot"><!></div>  <div class="dk-dot"><!></div>  <div class="dk-dot"><!></div></div></div>`);
+var root$12 = /* @__PURE__ */ from_html(`<div class="dk-titlebar"><div class="dk-brand"><div class="dk-logo"><svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white"><rect x="1" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"></rect><circle cx="9.75" cy="9.75" r="2.25"></circle></svg></div> <span class="dk-name">doku<span class="ext">.md</span></span></div> <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div> <div class="dk-titlebar-actions"><button class="dk-btn"><span>Search</span> <kbd>CTRL+K</kbd></button> <button class="dk-btn"><span>Browse</span> <kbd>CTRL+O</kbd></button></div> <button class="dk-btn" style="padding: 5px 10px"><span>?</span></button> <div class="dk-dots"><div class="dk-dot"><!></div>  <div class="dk-dot"><!></div>  <div class="dk-dot"><!></div></div></div>`);
 function Titlebar($$anchor, $$props) {
-	var div = root$11();
+	var div = root$12();
 	var div_1 = sibling(child(div), 2);
 	var div_2 = sibling(div_1, 2);
 	var button = child(div_2);
@@ -8670,9 +8713,9 @@ function Titlebar($$anchor, $$props) {
 delegate(["dblclick", "click"]);
 //#endregion
 //#region src/lib/center/TabBar.svelte
-var root$10 = /* @__PURE__ */ from_html(`<div role="tab" tabindex="0"><!> <span class="tab-label"> </span> <span class="close" role="button" tabindex="0"><!></span></div>`);
+var root$11 = /* @__PURE__ */ from_html(`<div role="tab" tabindex="0"><!> <span class="tab-label"> </span> <span class="close" role="button" tabindex="0"><!></span></div>`);
 var root_1$8 = /* @__PURE__ */ from_html(`<div class="dk-tabs-overflow" role="button" tabindex="0"><!></div>`);
-var root_2$2 = /* @__PURE__ */ from_html(`<div class="dk-overflow-item" role="button" tabindex="0"><!> <span> </span></div>`);
+var root_2$3 = /* @__PURE__ */ from_html(`<div class="dk-overflow-item" role="button" tabindex="0"><!> <span> </span></div>`);
 var root_3$1 = /* @__PURE__ */ from_html(`<div class="dk-overflow-dropdown open"></div>`);
 var root_4$1 = /* @__PURE__ */ from_html(`<div class="dk-tabs"><div class="dk-tabs-scroll"></div> <!></div> <!>`, 1);
 function TabBar($$anchor, $$props) {
@@ -8709,7 +8752,7 @@ function TabBar($$anchor, $$props) {
 	var div = first_child(fragment);
 	var div_1 = child(div);
 	each(div_1, 21, () => get(visibleTabs), (tab) => tab.id, ($$anchor, tab) => {
-		var div_2 = root$10();
+		var div_2 = root$11();
 		var node = child(div_2);
 		File_text(node, { size: 14 });
 		var span = sibling(node, 2);
@@ -8750,7 +8793,7 @@ function TabBar($$anchor, $$props) {
 	var consequent_1 = ($$anchor) => {
 		var div_4 = root_3$1();
 		each(div_4, 21, () => get(overflowTabs), index, ($$anchor, tab) => {
-			var div_5 = root_2$2();
+			var div_5 = root_2$3();
 			var node_5 = child(div_5);
 			File_text(node_5, { size: 15 });
 			var span_2 = sibling(node_5, 2);
@@ -8778,44 +8821,212 @@ function TabBar($$anchor, $$props) {
 }
 delegate(["click"]);
 //#endregion
+//#region src/lib/center/LocalSearch.svelte
+var root$10 = /* @__PURE__ */ from_html(`<div class="dk-local-search"><input type="text" placeholder="Find in document..."/> <button class="ls-btn" title="Previous match"><!></button> <button class="ls-btn" title="Next match"><!></button> <span class="ls-count"> </span> <button class="ls-btn" title="Close"><!></button></div>`);
+function LocalSearch($$anchor, $$props) {
+	push($$props, true);
+	let inputEl = prop($$props, "inputEl", 7);
+	var div = root$10();
+	var input = child(div);
+	remove_input_defaults(input);
+	bind_this(input, ($$value) => inputEl($$value), () => inputEl());
+	var button = sibling(input, 2);
+	Chevron_up(child(button), { size: 16 });
+	reset(button);
+	var button_1 = sibling(button, 2);
+	Chevron_down(child(button_1), { size: 16 });
+	reset(button_1);
+	var span = sibling(button_1, 2);
+	var text = child(span);
+	reset(span);
+	var button_2 = sibling(span, 2);
+	X(child(button_2), { size: 16 });
+	reset(button_2);
+	reset(div);
+	template_effect(() => {
+		set_value(input, $$props.query);
+		set_text(text, `${$$props.currentIndex ?? ""}/${$$props.matchCount ?? ""}`);
+	});
+	delegated("input", input, (e) => $$props.onquery(e.target.value));
+	delegated("keydown", input, (e) => {
+		if (e.key === "Escape") $$props.onclose();
+	});
+	delegated("click", button, () => $$props.onnavigate("prev"));
+	delegated("click", button_1, () => $$props.onnavigate("next"));
+	delegated("click", button_2, function(...$$args) {
+		$$props.onclose?.apply(this, $$args);
+	});
+	append($$anchor, div);
+	pop();
+}
+delegate([
+	"input",
+	"keydown",
+	"click"
+]);
+//#endregion
 //#region src/lib/center/DocumentView.svelte
-var root$9 = /* @__PURE__ */ from_html(`<h1> </h1> <div class="meta"><span> </span></div>`, 1);
-var root_1$7 = /* @__PURE__ */ from_html(`<div class="dk-doc"><!> <!></div>`);
+var root$9 = /* @__PURE__ */ from_html(`<span role="button" tabindex="0"><!></span>`);
+var root_1$7 = /* @__PURE__ */ from_html(`<h1> </h1> <div class="meta"><span> </span> <!></div>`, 1);
+var root_2$2 = /* @__PURE__ */ from_html(`<div class="dk-doc"><!> <!> <!></div>`);
 function DocumentView($$anchor, $$props) {
-	let title = prop($$props, "title", 3, ""), path = prop($$props, "path", 3, "");
-	var div = root_1$7();
-	var node = child(div);
-	var consequent = ($$anchor) => {
-		var fragment = root$9();
+	push($$props, true);
+	let title = prop($$props, "title", 3, ""), path = prop($$props, "path", 3, ""), bookmarked = prop($$props, "bookmarked", 3, false), showLocalSearch = prop($$props, "showLocalSearch", 3, false), localSearchQuery = prop($$props, "localSearchQuery", 3, "");
+	let containerEl = /* @__PURE__ */ state(void 0);
+	let marks = [];
+	let currentIndex = /* @__PURE__ */ state(0);
+	let matchCount = /* @__PURE__ */ state(0);
+	let searchInputEl = void 0;
+	user_effect(() => {
+		if (showLocalSearch()) tick().then(() => {});
+		else clearMarks();
+	});
+	function doSearch(query) {
+		$$props.onlocalSearchQuery?.(query);
+		clearMarks();
+		marks = [];
+		set(matchCount, 0);
+		set(currentIndex, 0);
+		if (!query.trim() || !get(containerEl)) return;
+		const lowerQuery = query.toLowerCase();
+		const walker = document.createTreeWalker(get(containerEl), NodeFilter.SHOW_TEXT, null);
+		const textNodes = [];
+		let node;
+		while (node = walker.nextNode()) textNodes.push(node);
+		const matches = [];
+		for (const tn of textNodes) {
+			const lower = (tn.textContent ?? "").toLowerCase();
+			let pos = lower.indexOf(lowerQuery);
+			while (pos !== -1) {
+				matches.push({
+					node: tn,
+					offset: pos
+				});
+				pos = lower.indexOf(lowerQuery, pos + 1);
+			}
+		}
+		if (matches.length === 0) return;
+		for (let i = matches.length - 1; i >= 0; i--) {
+			const m = matches[i];
+			const range = document.createRange();
+			range.setStart(m.node, m.offset);
+			range.setEnd(m.node, m.offset + query.length);
+			const mark = document.createElement("mark");
+			try {
+				range.surroundContents(mark);
+				marks.unshift(mark);
+			} catch {}
+		}
+		set(matchCount, marks.length, true);
+		if (marks.length > 0) {
+			marks[0].classList.add("mark-active");
+			set(currentIndex, 1);
+		}
+	}
+	function navigate(dir) {
+		if (marks.length === 0) return;
+		const active = marks[get(currentIndex) - 1];
+		if (active) active.classList.remove("mark-active");
+		if (dir === "next") set(currentIndex, get(currentIndex) >= marks.length ? 1 : get(currentIndex) + 1, true);
+		else set(currentIndex, get(currentIndex) <= 1 ? marks.length : get(currentIndex) - 1, true);
+		const next = marks[get(currentIndex) - 1];
+		if (next) {
+			next.classList.add("mark-active");
+			next.scrollIntoView({
+				behavior: "smooth",
+				block: "center"
+			});
+		}
+	}
+	function clearMarks() {
+		if (!get(containerEl)) return;
+		const existing = get(containerEl).querySelectorAll("mark");
+		for (const m of existing) {
+			const parent = m.parentNode;
+			if (parent) {
+				parent.replaceChild(document.createTextNode(m.textContent ?? ""), m);
+				parent.normalize();
+			}
+		}
+		marks = [];
+		set(currentIndex, 0);
+		set(matchCount, 0);
+	}
+	function handleClose() {
+		$$props.onlocalSearchQuery?.(localSearchQuery());
+		$$props.oncloseLocalSearch?.();
+	}
+	var div = root_2$2();
+	var node_1 = child(div);
+	var consequent_1 = ($$anchor) => {
+		var fragment = root_1$7();
 		var h1 = first_child(fragment);
-		var text = child(h1, true);
+		var text_1 = child(h1, true);
 		reset(h1);
 		var div_1 = sibling(h1, 2);
 		var span = child(div_1);
-		var text_1 = child(span, true);
+		var text_2 = child(span, true);
 		reset(span);
+		var node_2 = sibling(span, 2);
+		var consequent = ($$anchor) => {
+			var span_1 = root$9();
+			Star_filled(child(span_1), { size: 16 });
+			reset(span_1);
+			template_effect(() => set_class(span_1, 1, `star-doc ${bookmarked() ? "on" : ""}`));
+			delegated("click", span_1, function(...$$args) {
+				$$props.onbookmark?.apply(this, $$args);
+			});
+			append($$anchor, span_1);
+		};
+		if_block(node_2, ($$render) => {
+			if ($$props.onbookmark) $$render(consequent);
+		});
 		reset(div_1);
 		template_effect(() => {
-			set_text(text, title());
-			set_text(text_1, path());
+			set_text(text_1, title());
+			set_text(text_2, path());
 		});
 		append($$anchor, fragment);
 	};
-	if_block(node, ($$render) => {
-		if (title()) $$render(consequent);
+	if_block(node_1, ($$render) => {
+		if (title()) $$render(consequent_1);
 	});
-	var node_1 = sibling(node, 2);
-	var consequent_1 = ($$anchor) => {
+	var node_4 = sibling(node_1, 2);
+	var consequent_2 = ($$anchor) => {
 		var fragment_1 = comment();
 		snippet(first_child(fragment_1), () => $$props.children);
 		append($$anchor, fragment_1);
 	};
-	if_block(node_1, ($$render) => {
-		if ($$props.children) $$render(consequent_1);
+	if_block(node_4, ($$render) => {
+		if ($$props.children) $$render(consequent_2);
+	});
+	var node_6 = sibling(node_4, 2);
+	var consequent_3 = ($$anchor) => {
+		LocalSearch($$anchor, {
+			get query() {
+				return localSearchQuery();
+			},
+			onquery: doSearch,
+			onclose: handleClose,
+			onnavigate: navigate,
+			get matchCount() {
+				return get(matchCount);
+			},
+			get currentIndex() {
+				return get(currentIndex);
+			},
+			inputEl: searchInputEl
+		});
+	};
+	if_block(node_6, ($$render) => {
+		if (showLocalSearch()) $$render(consequent_3);
 	});
 	reset(div);
+	bind_this(div, ($$value) => set(containerEl, $$value), () => get(containerEl));
 	append($$anchor, div);
+	pop();
 }
+delegate(["click"]);
 //#endregion
 //#region src/lib/center/TableOfContents.svelte
 var root$8 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"> </div>`);
@@ -9251,10 +9462,13 @@ function App($$anchor, $$props) {
 	let activeDoc = /* @__PURE__ */ state(null);
 	let recentFolders = /* @__PURE__ */ state(proxy([]));
 	let bookmarksList = /* @__PURE__ */ state(proxy([]));
+	let showLocalSearch = /* @__PURE__ */ state(false);
+	let localSearchQuery = /* @__PURE__ */ state("");
 	let toasts = /* @__PURE__ */ state(proxy([]));
 	let activeTabPath = /* @__PURE__ */ user_derived(() => get(tabs).find((t) => t.active)?.path ?? "");
 	user_effect(() => {
 		const path = get(activeTabPath);
+		set(showLocalSearch, false);
 		if (path && get(projectPath)) GetDocument(get(projectPath), path).then((result) => {
 			set(activeDoc, {
 				html: result.html,
@@ -9312,6 +9526,16 @@ function App($$anchor, $$props) {
 	function dismissToast(id) {
 		set(toasts, get(toasts).filter((t) => t.id !== id), true);
 	}
+	function findNodeByPath(nodes, targetPath) {
+		for (const node of nodes) {
+			if (!node.isDir && node.path === targetPath) return node;
+			if (node.children) {
+				const found = findNodeByPath(node.children, targetPath);
+				if (found) return found;
+			}
+		}
+		return null;
+	}
 	async function openFolder(path) {
 		const folderPath = path ?? await OpenFolder();
 		if (folderPath) {
@@ -9349,9 +9573,15 @@ function App($$anchor, $$props) {
 			openFolder();
 			return;
 		}
+		if (ctrl && e.key === "f") {
+			e.preventDefault();
+			if (get(activeDoc)) set(showLocalSearch, true);
+			return;
+		}
 		if (e.key === "Escape") {
 			set(showSearch, false);
 			set(showShortcuts, false);
+			set(showLocalSearch, false);
 			return;
 		}
 		if (e.key === "?" && !(e.target instanceof HTMLInputElement)) set(showShortcuts, true);
@@ -9504,20 +9734,39 @@ function App($$anchor, $$props) {
 	});
 	var node_4 = sibling(node_3, 2);
 	var consequent = ($$anchor) => {
-		DocumentView($$anchor, {
-			get title() {
-				return get(activeDoc).title;
-			},
-			get path() {
-				return get(activeTabPath);
-			},
-			children: ($$anchor, $$slotProps) => {
-				var fragment_5 = comment();
-				html(first_child(fragment_5), () => get(activeDoc).html);
-				append($$anchor, fragment_5);
-			},
-			$$slots: { default: true }
-		});
+		{
+			let $0 = /* @__PURE__ */ user_derived(() => get(bookmarksList).some((b) => b.relPath === get(activeTabPath)));
+			let $1 = /* @__PURE__ */ user_derived(() => get(showLocalSearch) && get(activeDoc) !== null);
+			DocumentView($$anchor, {
+				get title() {
+					return get(activeDoc).title;
+				},
+				get path() {
+					return get(activeTabPath);
+				},
+				get bookmarked() {
+					return get($0);
+				},
+				onbookmark: () => {
+					const file = findNodeByPath(get(tree), get(activeTabPath));
+					if (file) toggleBookmark(file);
+				},
+				get showLocalSearch() {
+					return get($1);
+				},
+				get localSearchQuery() {
+					return get(localSearchQuery);
+				},
+				onlocalSearchQuery: (q) => set(localSearchQuery, q, true),
+				oncloseLocalSearch: () => set(showLocalSearch, false),
+				children: ($$anchor, $$slotProps) => {
+					var fragment_5 = comment();
+					html(first_child(fragment_5), () => get(activeDoc).html);
+					append($$anchor, fragment_5);
+				},
+				$$slots: { default: true }
+			});
+		}
 	};
 	var alternate = ($$anchor) => {
 		DocumentView($$anchor, {
