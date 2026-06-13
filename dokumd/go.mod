@@ -1,4 +1,4 @@
-module changeme
+module dokumd
 
 go 1.25.0
 

@@ -9,11 +9,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"changeme/internal/database"
-	"changeme/pkg/indexer"
-	"changeme/pkg/markdown"
-	"changeme/pkg/scanner"
-	"changeme/pkg/search"
+	"dokumd/internal/database"
+	"dokumd/pkg/indexer"
+	"dokumd/pkg/markdown"
+	"dokumd/pkg/scanner"
+	"dokumd/pkg/search"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/wailsapp/wails/v3/pkg/application"

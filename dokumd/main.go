@@ -9,9 +9,9 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 
-	"changeme/internal/config"
-	"changeme/internal/database"
-	"changeme/internal/services"
+	"dokumd/internal/config"
+	"dokumd/internal/database"
+	"dokumd/internal/services"
 )
 
 // assets embeds the compiled Svelte frontend into the Go binary.

@@ -13,7 +13,7 @@ import (
 	"sync"
 
 	_ "github.com/mattn/go-sqlite3"
-	"changeme/internal/database"
+	"dokumd/internal/database"
 )
 
 // IndexAction represents the type of operation to perform on the index.

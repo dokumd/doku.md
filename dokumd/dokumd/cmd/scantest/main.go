@@ -1,7 +1,7 @@
 package main
 import (
     "fmt"
-    "changeme/pkg/scanner"
+    "dokumd/pkg/scanner"
 )
 func main() {
     files, err := scanner.ScanMarkdownFiles("/tmp/test-scan", []string{"node_modules", ".git", "dist"})

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
-	"changeme/internal/config"
+	"dokumd/internal/config"
 )
 
 // DB is the global application database handle.

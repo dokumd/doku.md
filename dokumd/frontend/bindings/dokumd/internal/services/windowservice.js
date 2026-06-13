@@ -17,7 +17,7 @@ import { Call as $Call, CancellablePromise as $CancellablePromise, Create as $Cr
  * @returns {$CancellablePromise<void>}
  */
 export function Close() {
-    return $Call.ByID(1502034273);
+    return $Call.ByID(257021087);
 }
 
 /**
@@ -25,7 +25,7 @@ export function Close() {
  * @returns {$CancellablePromise<void>}
  */
 export function Maximise() {
-    return $Call.ByID(803170324);
+    return $Call.ByID(3671187662);
 }
 
 /**
@@ -33,5 +33,5 @@ export function Maximise() {
  * @returns {$CancellablePromise<void>}
  */
 export function Minimise() {
-    return $Call.ByID(1466109830);
+    return $Call.ByID(809307180);
 }

@@ -30,7 +30,7 @@ import * as $models from "./models.js";
  * @returns {$CancellablePromise<void>}
  */
 export function AddBookmark(rootPath, relPath, title) {
-    return $Call.ByID(636601166, rootPath, relPath, title);
+    return $Call.ByID(4240024532, rootPath, relPath, title);
 }
 
 /**
@@ -40,7 +40,7 @@ export function AddBookmark(rootPath, relPath, title) {
  * @returns {$CancellablePromise<void>}
  */
 export function AddRecentFolder(path) {
-    return $Call.ByID(781739845, path);
+    return $Call.ByID(1234210707, path);
 }
 
 /**
@@ -51,7 +51,7 @@ export function AddRecentFolder(path) {
  * @returns {$CancellablePromise<$models.Bookmark[]>}
  */
 export function GetBookmarks(rootPath) {
-    return $Call.ByID(461109430, rootPath).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(2360573936, rootPath).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType1($result);
     }));
 }
@@ -65,7 +65,7 @@ export function GetBookmarks(rootPath) {
  * @returns {$CancellablePromise<$models.DocumentResult>}
  */
 export function GetDocument(rootPath, relPath) {
-    return $Call.ByID(1216640092, rootPath, relPath).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(3023618490, rootPath, relPath).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType2($result);
     }));
 }
@@ -81,7 +81,7 @@ export function GetDocument(rootPath, relPath) {
  * @returns {$CancellablePromise<scanner$0.FileEntry[]>}
  */
 export function GetFileTree(rootPath) {
-    return $Call.ByID(618366615, rootPath).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(2798134873, rootPath).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType4($result);
     }));
 }
@@ -93,7 +93,7 @@ export function GetFileTree(rootPath) {
  * @returns {$CancellablePromise<string>}
  */
 export function GetLastFolder() {
-    return $Call.ByID(3119105377);
+    return $Call.ByID(62601019);
 }
 
 /**
@@ -102,7 +102,7 @@ export function GetLastFolder() {
  * @returns {$CancellablePromise<$models.TabInfo[]>}
  */
 export function GetOpenTabs(rootPath) {
-    return $Call.ByID(1132693393, rootPath).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(1332864571, rootPath).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType6($result);
     }));
 }
@@ -114,7 +114,7 @@ export function GetOpenTabs(rootPath) {
  * @returns {$CancellablePromise<$models.RecentFolder[]>}
  */
 export function GetRecentFolders() {
-    return $Call.ByID(3826914623).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(1153097633).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType8($result);
     }));
 }
@@ -130,7 +130,7 @@ export function GetRecentFolders() {
  * @returns {$CancellablePromise<void>}
  */
 export function IndexProject(rootPath) {
-    return $Call.ByID(1319153186, rootPath);
+    return $Call.ByID(3090418480, rootPath);
 }
 
 /**
@@ -140,7 +140,7 @@ export function IndexProject(rootPath) {
  * @returns {$CancellablePromise<string>}
  */
 export function OpenFolder() {
-    return $Call.ByID(2364318539);
+    return $Call.ByID(2622795729);
 }
 
 /**
@@ -150,7 +150,7 @@ export function OpenFolder() {
  * @returns {$CancellablePromise<void>}
  */
 export function RemoveBookmark(rootPath, relPath) {
-    return $Call.ByID(3841548467, rootPath, relPath);
+    return $Call.ByID(4094943129, rootPath, relPath);
 }
 
 /**
@@ -159,7 +159,7 @@ export function RemoveBookmark(rootPath, relPath) {
  * @returns {$CancellablePromise<void>}
  */
 export function RemoveRecentFolder(path) {
-    return $Call.ByID(2663766936, path);
+    return $Call.ByID(4111641902, path);
 }
 
 /**
@@ -170,7 +170,7 @@ export function RemoveRecentFolder(path) {
  * @returns {$CancellablePromise<void>}
  */
 export function SaveOpenTabs(rootPath, tabs) {
-    return $Call.ByID(3088429946, rootPath, tabs);
+    return $Call.ByID(3910621276, rootPath, tabs);
 }
 
 /**
@@ -181,7 +181,7 @@ export function SaveOpenTabs(rootPath, tabs) {
  * @returns {$CancellablePromise<search$0.Result[]>}
  */
 export function SearchAll(rootPath, query, limit) {
-    return $Call.ByID(1874471182, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(771128088, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType10($result);
     }));
 }
@@ -194,7 +194,7 @@ export function SearchAll(rootPath, query, limit) {
  * @returns {$CancellablePromise<search$0.Result[]>}
  */
 export function SearchByPath(rootPath, query, limit) {
-    return $Call.ByID(2720517277, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(2473406247, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType10($result);
     }));
 }
@@ -207,7 +207,7 @@ export function SearchByPath(rootPath, query, limit) {
  * @returns {$CancellablePromise<search$0.Result[]>}
  */
 export function SearchByTitle(rootPath, query, limit) {
-    return $Call.ByID(1802336640, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
+    return $Call.ByID(3886979254, rootPath, query, limit).then(/** @type {($result: any) => any} */(($result) => {
         return $$createType10($result);
     }));
 }

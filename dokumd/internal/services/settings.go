@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"changeme/internal/config"
+	"dokumd/internal/config"
 )
 
 // Settings holds all application-level configuration values.

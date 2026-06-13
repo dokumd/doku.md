@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SearchAll } from '../../../bindings/changeme/internal/services/folderservice.js'
+  import { SearchAll } from '../../../bindings/dokumd/internal/services/folderservice.js'
 
   let { show, onclose, onselect, projectPath }: {
     show: boolean

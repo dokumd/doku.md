@@ -8024,7 +8024,7 @@ function loadOptionalScript(url) {
 }
 loadOptionalScript("/wails/custom.js");
 //#endregion
-//#region bindings/changeme/pkg/scanner/models.js
+//#region bindings/dokumd/pkg/scanner/models.js
 /**
 * FileEntry represents a single item found during a directory scan.
 * The backend determines isDir from the OS; the frontend should not guess it.
@@ -8059,7 +8059,7 @@ var FileEntry = class FileEntry {
 	}
 };
 //#endregion
-//#region bindings/changeme/pkg/search/models.js
+//#region bindings/dokumd/pkg/search/models.js
 /**
 * Result represents a single search hit.
 */
@@ -8105,7 +8105,7 @@ var Result = class Result {
 	}
 };
 //#endregion
-//#region bindings/changeme/pkg/markdown/models.js
+//#region bindings/dokumd/pkg/markdown/models.js
 /**
 * Heading represents a single heading extracted from a Markdown document.
 */
@@ -8145,7 +8145,7 @@ var Heading = class Heading {
 	}
 };
 //#endregion
-//#region bindings/changeme/internal/services/models.js
+//#region bindings/dokumd/internal/services/models.js
 /**
 * Bookmark represents a single bookmarked document.
 */
@@ -8310,7 +8310,7 @@ var TabInfo = class TabInfo {
 var $$createType0$1 = Heading.createFrom;
 var $$createType1$1 = Array$1($$createType0$1);
 //#endregion
-//#region bindings/changeme/internal/services/folderservice.js
+//#region bindings/dokumd/internal/services/folderservice.js
 /**
 * FolderService handles opening local folders via the native OS directory picker.
 * @module
@@ -8323,7 +8323,7 @@ var $$createType1$1 = Array$1($$createType0$1);
 * @returns {$CancellablePromise<void>}
 */
 function AddBookmark(rootPath, relPath, title) {
-	return ByID(636601166, rootPath, relPath, title);
+	return ByID(4240024532, rootPath, relPath, title);
 }
 /**
 * AddRecentFolder inserts or updates a folder in the recent list.
@@ -8332,7 +8332,7 @@ function AddBookmark(rootPath, relPath, title) {
 * @returns {$CancellablePromise<void>}
 */
 function AddRecentFolder(path) {
-	return ByID(781739845, path);
+	return ByID(1234210707, path);
 }
 /**
 * GetBookmarks returns all bookmarks for the given project, validating each
@@ -8342,7 +8342,7 @@ function AddRecentFolder(path) {
 * @returns {$CancellablePromise<$models.Bookmark[]>}
 */
 function GetBookmarks(rootPath) {
-	return ByID(461109430, rootPath).then((($result) => {
+	return ByID(2360573936, rootPath).then((($result) => {
 		return $$createType1($result);
 	}));
 }
@@ -8355,7 +8355,7 @@ function GetBookmarks(rootPath) {
 * @returns {$CancellablePromise<$models.DocumentResult>}
 */
 function GetDocument(rootPath, relPath) {
-	return ByID(1216640092, rootPath, relPath).then((($result) => {
+	return ByID(3023618490, rootPath, relPath).then((($result) => {
 		return $$createType2($result);
 	}));
 }
@@ -8370,7 +8370,7 @@ function GetDocument(rootPath, relPath) {
 * @returns {$CancellablePromise<scanner$0.FileEntry[]>}
 */
 function GetFileTree(rootPath) {
-	return ByID(618366615, rootPath).then((($result) => {
+	return ByID(2798134873, rootPath).then((($result) => {
 		return $$createType4($result);
 	}));
 }
@@ -8381,7 +8381,7 @@ function GetFileTree(rootPath) {
 * @returns {$CancellablePromise<string>}
 */
 function GetLastFolder() {
-	return ByID(3119105377);
+	return ByID(62601019);
 }
 /**
 * GetOpenTabs retrieves the persisted open tabs for a project, ordered by position.
@@ -8389,7 +8389,7 @@ function GetLastFolder() {
 * @returns {$CancellablePromise<$models.TabInfo[]>}
 */
 function GetOpenTabs(rootPath) {
-	return ByID(1132693393, rootPath).then((($result) => {
+	return ByID(1332864571, rootPath).then((($result) => {
 		return $$createType6($result);
 	}));
 }
@@ -8400,7 +8400,7 @@ function GetOpenTabs(rootPath) {
 * @returns {$CancellablePromise<$models.RecentFolder[]>}
 */
 function GetRecentFolders() {
-	return ByID(3826914623).then((($result) => {
+	return ByID(1153097633).then((($result) => {
 		return $$createType8($result);
 	}));
 }
@@ -8415,7 +8415,7 @@ function GetRecentFolders() {
 * @returns {$CancellablePromise<void>}
 */
 function IndexProject(rootPath) {
-	return ByID(1319153186, rootPath);
+	return ByID(3090418480, rootPath);
 }
 /**
 * OpenFolder opens the native OS directory picker and returns the selected path.
@@ -8424,7 +8424,7 @@ function IndexProject(rootPath) {
 * @returns {$CancellablePromise<string>}
 */
 function OpenFolder() {
-	return ByID(2364318539);
+	return ByID(2622795729);
 }
 /**
 * RemoveBookmark removes a document from the bookmarks table.
@@ -8433,7 +8433,7 @@ function OpenFolder() {
 * @returns {$CancellablePromise<void>}
 */
 function RemoveBookmark(rootPath, relPath) {
-	return ByID(3841548467, rootPath, relPath);
+	return ByID(4094943129, rootPath, relPath);
 }
 /**
 * SaveOpenTabs persists the list of open tabs for a project.
@@ -8443,7 +8443,7 @@ function RemoveBookmark(rootPath, relPath) {
 * @returns {$CancellablePromise<void>}
 */
 function SaveOpenTabs(rootPath, tabs) {
-	return ByID(3088429946, rootPath, tabs);
+	return ByID(3910621276, rootPath, tabs);
 }
 /**
 * SearchAll runs a full-text search across all indexed documents in the project.
@@ -8453,7 +8453,7 @@ function SaveOpenTabs(rootPath, tabs) {
 * @returns {$CancellablePromise<search$0.Result[]>}
 */
 function SearchAll(rootPath, query, limit) {
-	return ByID(1874471182, rootPath, query, limit).then((($result) => {
+	return ByID(771128088, rootPath, query, limit).then((($result) => {
 		return $$createType10($result);
 	}));
 }
@@ -8594,7 +8594,7 @@ delegate([
 	"keydown"
 ]);
 //#endregion
-//#region bindings/changeme/internal/services/windowservice.js
+//#region bindings/dokumd/internal/services/windowservice.js
 /**
 * WindowService exposes native window operations (minimise, maximise, close) to the frontend.
 * These replace the system titlebar since the app uses a custom titlebar.
@@ -8605,21 +8605,21 @@ delegate([
 * @returns {$CancellablePromise<void>}
 */
 function Close() {
-	return ByID(1502034273);
+	return ByID(257021087);
 }
 /**
 * Maximise toggles the window between maximised and normal state.
 * @returns {$CancellablePromise<void>}
 */
 function Maximise() {
-	return ByID(803170324);
+	return ByID(3671187662);
 }
 /**
 * Minimise minimises the application window.
 * @returns {$CancellablePromise<void>}
 */
 function Minimise() {
-	return ByID(1466109830);
+	return ByID(809307180);
 }
 //#endregion
 //#region src/lib/topbar/Titlebar.svelte

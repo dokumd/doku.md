@@ -12,7 +12,7 @@
   import RecentFolders from './lib/sidebar/RecentFolders.svelte'
   import ToastContainer from './lib/feedback/ToastContainer.svelte'
   import StatusBar from './lib/center/StatusBar.svelte'
-  import { OpenFolder, GetFileTree, IndexProject, GetDocument, SaveOpenTabs, GetOpenTabs, AddRecentFolder, GetRecentFolders, GetLastFolder, AddBookmark, RemoveBookmark, GetBookmarks } from '../bindings/changeme/internal/services/folderservice.js'
+  import { OpenFolder, GetFileTree, IndexProject, GetDocument, SaveOpenTabs, GetOpenTabs, AddRecentFolder, GetRecentFolders, GetLastFolder, AddBookmark, RemoveBookmark, GetBookmarks } from '../bindings/dokumd/internal/services/folderservice.js'
   import type { Tab, FileNode, TocItem, Toast } from './lib/types.js'
   import { buildTree } from './lib/helpers/tree.js'
   import { onMount } from 'svelte'

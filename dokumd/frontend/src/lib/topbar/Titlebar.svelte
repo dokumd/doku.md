@@ -1,6 +1,6 @@
 <script lang="ts">
   import { IconMinus, IconSquare, IconX } from '@tabler/icons-svelte'
-  import { Minimise, Maximise, Close } from '../../../bindings/changeme/internal/services/windowservice.js'
+  import { Minimise, Maximise, Close } from '../../../bindings/dokumd/internal/services/windowservice.js'
 
   // Titlebar is the top bar of the app. It contains the brand, action buttons,
   // and platform-specific window controls (minimise, maximise, close).
