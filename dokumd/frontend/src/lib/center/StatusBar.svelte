@@ -9,25 +9,6 @@
     indexStatus?: string
   } = $props()
 
-  function truncatePath(p: string, maxLen: number = 60): string {
-    if (!p || p.length <= maxLen) return p ?? ''
-    const parts = p.split('/')
-    if (parts.length < 3) return p
-
-    const first = parts[0] + '/' + parts[1]
-    const last = parts[parts.length - 1]
-    const middle = parts.slice(2, -1)
-
-    let result = first + '/.../' + last
-    if (result.length > maxLen) {
-      result = first + '/.../' + middle.slice(-2).join('/') + '/' + last
-    }
-    if (result.length > maxLen) {
-      result = first + '/.../' + last
-    }
-    return result
-  }
-
   // Status colour based on index state.
   let statusClass = $derived(
     indexStatus === 'indexing' ? 'status-yellow' :
@@ -41,7 +22,7 @@
     {#if path}
       <span class="dk-statusbar-path" title={path}>
         <IconFolderOpen size={14} style="margin-right: 4px; vertical-align: text-bottom;" />
-        {truncatePath(path)}
+        {path}
       </span>
     {:else}
       <span class="dk-statusbar-path muted">No project open</span>
@@ -66,9 +47,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 4px 12px;
-    border-top: 0.5px solid var(--border, #333);
+    border-top: 0.5px solid var(--border);
     font-size: 12px;
-    color: var(--muted, #888);
+    color: var(--muted);
     min-height: 26px;
     flex-shrink: 0;
   }
@@ -90,7 +71,7 @@
     flex-shrink: 0;
     margin-left: 12px;
   }
-  .status-yellow { color: #eab308; }
-  .status-green  { color: #22c55e; }
-  .status-red    { color: #ef4444; }
+  .status-yellow { color: var(--toast-warning); }
+  .status-green  { color: var(--toast-success); }
+  .status-red    { color: var(--toast-error); }
 </style>

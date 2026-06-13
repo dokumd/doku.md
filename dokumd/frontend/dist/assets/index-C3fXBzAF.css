@@ -45,6 +45,7 @@ body {
 }
 
 /* ─── Scrollbars ─── */
+
 ::-webkit-scrollbar {
     width: 3px;
 }
@@ -55,6 +56,7 @@ body {
 }
 
 /* ─── kbd ─── */
+
 kbd {
     font-size: 10px;
     font-weight: bold;
@@ -67,6 +69,7 @@ kbd {
 }
 
 /* ─── App shell ─── */
+
 .dk {
     display: flex;
     flex-direction: column;
@@ -76,6 +79,7 @@ kbd {
 }
 
 /* ─── Titlebar ─── */
+
 .dk-titlebar {
     background: var(--dark-bar);
     border-bottom: 0.5px solid var(--border);
@@ -168,6 +172,7 @@ kbd {
 }
 
 /* ─── Body ─── */
+
 .dk-body {
     display: flex;
     flex: 1;
@@ -175,6 +180,7 @@ kbd {
 }
 
 /* ─── Left sidebar ─── */
+
 .dk-left {
     width: 250px;
     flex-shrink: 0;
@@ -186,6 +192,7 @@ kbd {
 }
 
 /* ─── Accordion ─── */
+
 .dk-acc-header {
     padding: 10px 12px;
     font-size: 11px;
@@ -218,6 +225,7 @@ kbd {
 }
 
 /* ─── File tree ─── */
+
 .dk-tree {
     padding: 4px 6px 10px;
 }
@@ -278,6 +286,7 @@ kbd {
 }
 
 /* ─── Bookmarks ─── */
+
 .dk-bm-list {
     padding: 4px 6px 10px;
 }
@@ -299,6 +308,7 @@ kbd {
 }
 
 /* ─── Center wrap ─── */
+
 .dk-wrap {
     position: relative;
     flex: 1;
@@ -315,6 +325,7 @@ kbd {
 }
 
 /* ─── Tabs ─── */
+
 .dk-tabs {
     display: flex;
     align-items: center;
@@ -395,6 +406,7 @@ kbd {
 }
 
 /* ─── Overflow dropdown ─── */
+
 .dk-overflow-dropdown {
     position: absolute;
     top: 44px;
@@ -442,6 +454,7 @@ kbd {
 }
 
 /* ─── Document ─── */
+
 .dk-doc {
     flex: 1;
     overflow-y: auto;
@@ -517,8 +530,8 @@ kbd {
     line-height: 1.8;
 }
 
-
 /* ─── Right TOC ─── */
+
 .dk-right {
     width: 210px;
     flex-shrink: 0;
@@ -594,6 +607,7 @@ kbd {
 }
 
 /* ─── Overlays ─── */
+
 .dk-overlay {
     position: absolute;
     top: 0;
@@ -609,6 +623,7 @@ kbd {
 }
 
 /* Search overlay */
+
 .dk-cmd-box {
     background: var(--bg-2);
     border: 0.5px solid var(--border);
@@ -702,6 +717,7 @@ kbd {
 }
 
 /* Shortcuts overlay */
+
 .dk-shortcuts-box {
     background: var(--bg-2);
     border: 0.5px solid var(--border);
@@ -767,6 +783,7 @@ kbd {
 }
 
 /* ─── Toasts ─── */
+
 .dk-toasts {
     position: fixed;
     bottom: 50px;
@@ -822,3 +839,61 @@ kbd {
 .dk-toast.error .toast-icon {
     color: var(--toast-error);
 }
+  .dk-folder-list.svelte-6qkb0q {
+    padding: 4px 0;
+  }
+  .dk-folder-item.svelte-6qkb0q {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: var(--text-2);
+    cursor: pointer;
+    border-radius: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .dk-folder-item.svelte-6qkb0q:hover {
+    background: var(--accent-bg);
+    color: var(--text-1);
+  }
+  .path-text.svelte-6qkb0q {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: rtl;
+    text-align: left;
+  }
+
+  .dk-statusbar.svelte-1we2aji {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 12px;
+    border-top: 0.5px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 26px;
+    flex-shrink: 0;
+  }
+  .dk-statusbar-left.svelte-1we2aji {
+    flex: 1;
+    min-width: 0;
+  }
+  .dk-statusbar-path.svelte-1we2aji {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    direction: rtl;
+    text-align: left;
+  }
+  .dk-statusbar-path.muted.svelte-1we2aji {
+    font-style: italic;
+  }
+  .dk-statusbar-right.svelte-1we2aji {
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .status-yellow.svelte-1we2aji { color: var(--toast-warning); }
+  .status-green.svelte-1we2aji  { color: var(--toast-success); }
+  .status-red.svelte-1we2aji    { color: var(--toast-error); }

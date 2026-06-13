@@ -28,6 +28,7 @@
     </div>
     <span class="dk-name">doku<span class="ext">.md</span></span>
   </div>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="dk-titlebarcenter" style="--wails-draggable: drag" ondblclick={Maximise}></div>
   <div class="dk-titlebar-actions">
     <button class="dk-btn" onclick={onsearch}>
@@ -43,8 +44,14 @@
   </button>
 
   <div class="dk-dots">
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="dk-dot" onclick={Minimise}><IconMinus size={11} /></div>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="dk-dot" onclick={Maximise}><IconSquare size={11} /></div>
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="dk-dot" onclick={Close}><IconX size={11} /></div>
   </div>
 </div>

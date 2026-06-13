@@ -7,7 +7,10 @@
 </script>
 
 {#if show}
+  <!-- svelte-ignore a11y_interactive_supports_focus -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div class="dk-overlay" onclick={onclose} role="dialog">
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="dk-shortcuts-box" onclick={(e: MouseEvent) => e.stopPropagation()}>
       <div class="dk-shortcuts-title">
         Keyboard Shortcuts
@@ -18,6 +21,7 @@
         <div class="dk-shortcuts-group-title">Navigation</div>
         <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>O</kbd></span></div>
         <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>K</kbd></span></div>
+        <div class="dk-shortcut-row"><span>Find in document</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>F</kbd></span></div>
         <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>W</kbd></span></div>
         <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>TAB</kbd></span></div>
         <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd>{modifier}</kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div>

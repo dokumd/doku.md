@@ -22,7 +22,22 @@ type Settings struct {
 // defaultSettings returns the Settings struct with sensible defaults.
 func defaultSettings() Settings {
 	return Settings{
-		ExcludeDirs: []string{".git", ".dokumd", "node_modules", "dist", ".svelte-kit"},
+		ExcludeDirs: []string{
+            // Version control
+            ".git", ".svn", ".hg",
+            // doku.md
+            ".dokumd",
+            // Node/frontend
+            "node_modules", "dist", ".svelte-kit", ".cache", ".parcel-cache", ".vite", ".turbo",
+            // Next/Nuxt
+            ".next", ".nuxt",
+            // Go
+            "bin", "vendor",
+            // IDEs
+            ".idea", ".vscode",
+            // Python
+            "__pycache__",
+        },
 	}
 }
 

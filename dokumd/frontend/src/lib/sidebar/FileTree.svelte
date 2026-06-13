@@ -1,6 +1,7 @@
 <script lang="ts">
   import { IconChevronDown, IconChevronRight, IconFolder, IconFileText, IconStar, IconStarFilled } from '@tabler/icons-svelte'
   import type { FileNode } from '../types.js'
+  import Self from './FileTree.svelte'
 
   // Renders a tree of folders and files. Each file row includes a clickable
   // star icon (bookmark toggle) visible on hover and always visible if bookmarked.
@@ -18,6 +19,7 @@
 <div class="dk-tree">
   {#each nodes as node}
     {#if node.isDir}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
         class="dk-folder"
         onclick={() => ontogglefolder(node)}
@@ -34,9 +36,10 @@
       </div>
 
       {#if node.expanded && node.children}
-        <svelte:self nodes={node.children} {ontogglefolder} {ontogglebookmark} {onselectfile} {bookmarkedPaths} />
+        <Self nodes={node.children} {ontogglefolder} {ontogglebookmark} {onselectfile} {bookmarkedPaths} />
       {/if}
     {:else}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
         class="dk-file"
         onclick={() => onselectfile(node)}

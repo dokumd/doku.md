@@ -5933,7 +5933,7 @@ function Star_filled($$anchor, $$props) {
 }
 //#endregion
 //#region src/lib/overlays/ShortcutsOverlay.svelte
-var root$13 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-shortcuts-box"><div class="dk-shortcuts-title">Keyboard Shortcuts <button><!></button></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Navigation</div> <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>O</kbd></span></div> <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>K</kbd></span></div> <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>W</kbd></span></div> <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Reopen last closed tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>T</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Bookmarks</div> <div class="dk-shortcut-row"><span>Toggle bookmark</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>D</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">General</div> <div class="dk-shortcut-row"><span>Keyboard shortcuts</span><span class="dk-shortcut-keys"><kbd>?</kbd></span></div> <div class="dk-shortcut-row"><span>Close overlay</span><span class="dk-shortcut-keys"><kbd>ESC</kbd></span></div></div></div></div>`);
+var root$13 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-shortcuts-box"><div class="dk-shortcuts-title">Keyboard Shortcuts <button><!></button></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Navigation</div> <div class="dk-shortcut-row"><span>Open project</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>O</kbd></span></div> <div class="dk-shortcut-row"><span>Search</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>K</kbd></span></div> <div class="dk-shortcut-row"><span>Find in document</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>F</kbd></span></div> <div class="dk-shortcut-row"><span>Close tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>W</kbd></span></div> <div class="dk-shortcut-row"><span>Next tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Previous tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>TAB</kbd></span></div> <div class="dk-shortcut-row"><span>Reopen last closed tab</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>SHIFT</kbd><kbd>T</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">Bookmarks</div> <div class="dk-shortcut-row"><span>Toggle bookmark</span><span class="dk-shortcut-keys"><kbd> </kbd><kbd>D</kbd></span></div></div> <div class="dk-shortcuts-group"><div class="dk-shortcuts-group-title">General</div> <div class="dk-shortcut-row"><span>Keyboard shortcuts</span><span class="dk-shortcut-keys"><kbd>?</kbd></span></div> <div class="dk-shortcut-row"><span>Close overlay</span><span class="dk-shortcut-keys"><kbd>ESC</kbd></span></div></div></div></div>`);
 function ShortcutsOverlay($$anchor, $$props) {
 	let modifier = prop($$props, "modifier", 3, "CTRL");
 	var fragment = comment();
@@ -5984,7 +5984,7 @@ function ShortcutsOverlay($$anchor, $$props) {
 		var kbd_4 = child(span_4);
 		var text_4 = child(kbd_4, true);
 		reset(kbd_4);
-		next(2);
+		next();
 		reset(span_4);
 		reset(div_8);
 		var div_9 = sibling(div_8, 2);
@@ -5995,17 +5995,25 @@ function ShortcutsOverlay($$anchor, $$props) {
 		next(2);
 		reset(span_5);
 		reset(div_9);
-		reset(div_3);
-		var div_10 = sibling(div_3, 2);
-		var div_11 = sibling(child(div_10), 2);
-		var span_6 = sibling(child(div_11));
+		var div_10 = sibling(div_9, 2);
+		var span_6 = sibling(child(div_10));
 		var kbd_6 = child(span_6);
 		var text_6 = child(kbd_6, true);
 		reset(kbd_6);
-		next();
+		next(2);
 		reset(span_6);
-		reset(div_11);
 		reset(div_10);
+		reset(div_3);
+		var div_11 = sibling(div_3, 2);
+		var div_12 = sibling(child(div_11), 2);
+		var span_7 = sibling(child(div_12));
+		var kbd_7 = child(span_7);
+		var text_7 = child(kbd_7, true);
+		reset(kbd_7);
+		next();
+		reset(span_7);
+		reset(div_12);
+		reset(div_11);
 		next(2);
 		reset(div_1);
 		reset(div);
@@ -6017,6 +6025,7 @@ function ShortcutsOverlay($$anchor, $$props) {
 			set_text(text_4, modifier());
 			set_text(text_5, modifier());
 			set_text(text_6, modifier());
+			set_text(text_7, modifier());
 		});
 		delegated("click", div, function(...$$args) {
 			$$props.onclose?.apply(this, $$args);
@@ -6121,6 +6130,15 @@ function invoke(msg) {
 function IsWindows() {
 	var _a, _b;
 	return ((_b = (_a = window._wails) === null || _a === void 0 ? void 0 : _a.environment) === null || _b === void 0 ? void 0 : _b.OS) === "windows";
+}
+/**
+* Checks if the current environment is a macOS operating system.
+*
+* @returns True if the environment is macOS, false otherwise.
+*/
+function IsMac() {
+	var _a, _b;
+	return ((_b = (_a = window._wails) === null || _a === void 0 ? void 0 : _a.environment) === null || _b === void 0 ? void 0 : _b.OS) === "darwin";
 }
 /**
 * Reports whether the app is being run in debug mode.
@@ -8605,7 +8623,7 @@ function Minimise() {
 }
 //#endregion
 //#region src/lib/topbar/Titlebar.svelte
-var root$11 = /* @__PURE__ */ from_html(`<div class="dk-titlebar"><div class="dk-brand"><div class="dk-logo"><svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white"><rect x="1" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"></rect><circle cx="9.75" cy="9.75" r="2.25"></circle></svg></div> <span class="dk-name">doku<span class="ext">.md</span></span></div> <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div> <div class="dk-titlebar-actions"><button class="dk-btn"><span>Search</span> <kbd>CTRL+K</kbd></button> <button class="dk-btn"><span>Browse</span> <kbd>CTRL+O</kbd></button></div> <button class="dk-btn" style="padding: 5px 10px"><span>?</span></button> <div class="dk-dots"><div class="dk-dot"><!></div> <div class="dk-dot"><!></div> <div class="dk-dot"><!></div></div></div>`);
+var root$11 = /* @__PURE__ */ from_html(`<div class="dk-titlebar"><div class="dk-brand"><div class="dk-logo"><svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white"><rect x="1" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"></rect><circle cx="9.75" cy="9.75" r="2.25"></circle></svg></div> <span class="dk-name">doku<span class="ext">.md</span></span></div> <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div> <div class="dk-titlebar-actions"><button class="dk-btn"><span>Search</span> <kbd>CTRL+K</kbd></button> <button class="dk-btn"><span>Browse</span> <kbd>CTRL+O</kbd></button></div> <button class="dk-btn" style="padding: 5px 10px"><span>?</span></button> <div class="dk-dots"><div class="dk-dot"><!></div>  <div class="dk-dot"><!></div>  <div class="dk-dot"><!></div></div></div>`);
 function Titlebar($$anchor, $$props) {
 	var div = root$11();
 	var div_1 = sibling(child(div), 2);
@@ -8786,7 +8804,15 @@ function DocumentView($$anchor, $$props) {
 	if_block(node, ($$render) => {
 		if (title()) $$render(consequent);
 	});
-	slot(sibling(node, 2), $$props, "default", {}, null);
+	var node_1 = sibling(node, 2);
+	var consequent_1 = ($$anchor) => {
+		var fragment_1 = comment();
+		snippet(first_child(fragment_1), () => $$props.children);
+		append($$anchor, fragment_1);
+	};
+	if_block(node_1, ($$render) => {
+		if ($$props.children) $$render(consequent_1);
+	});
 	reset(div);
 	append($$anchor, div);
 }
@@ -8892,8 +8918,7 @@ function FileTree($$anchor, $$props) {
 			reset(div_1);
 			var node_4 = sibling(div_1, 2);
 			var consequent_1 = ($$anchor) => {
-				var fragment_4 = comment();
-				FileTree(first_child(fragment_4), {
+				FileTree($$anchor, {
 					get nodes() {
 						return get(node).children;
 					},
@@ -8910,7 +8935,6 @@ function FileTree($$anchor, $$props) {
 						return bookmarkedPaths();
 					}
 				});
-				append($$anchor, fragment_4);
 			};
 			if_block(node_4, ($$render) => {
 				if (get(node).expanded && get(node).children) $$render(consequent_1);
@@ -8921,13 +8945,13 @@ function FileTree($$anchor, $$props) {
 		};
 		var alternate_2 = ($$anchor) => {
 			var div_2 = root_1$4();
-			var node_6 = child(div_2);
-			File_text(node_6, { size: 14 });
-			var span = sibling(node_6, 2);
+			var node_5 = child(div_2);
+			File_text(node_5, { size: 14 });
+			var span = sibling(node_5, 2);
 			var text_1 = child(span, true);
 			reset(span);
 			var span_1 = sibling(span, 2);
-			var node_7 = child(span_1);
+			var node_6 = child(span_1);
 			var consequent_3 = ($$anchor) => {
 				Star_filled($$anchor, { size: 13 });
 			};
@@ -8935,7 +8959,7 @@ function FileTree($$anchor, $$props) {
 			var alternate_1 = ($$anchor) => {
 				Star($$anchor, { size: 13 });
 			};
-			if_block(node_7, ($$render) => {
+			if_block(node_6, ($$render) => {
 				if (get(d)) $$render(consequent_3);
 				else $$render(alternate_1, -1);
 			});
@@ -9091,20 +9115,7 @@ var root_3 = /* @__PURE__ */ from_html(`<span> </span>`);
 var root_4 = /* @__PURE__ */ from_html(`<span>Index error</span>`);
 var root_5 = /* @__PURE__ */ from_html(`<div class="dk-statusbar svelte-1we2aji"><div class="dk-statusbar-left svelte-1we2aji"><!></div> <div><!></div></div>`);
 function StatusBar($$anchor, $$props) {
-	push($$props, true);
 	let indexedCount = prop($$props, "indexedCount", 3, 0), indexStatus = prop($$props, "indexStatus", 3, "idle");
-	function truncatePath(p, maxLen = 60) {
-		if (!p || p.length <= maxLen) return p ?? "";
-		const parts = p.split("/");
-		if (parts.length < 3) return p;
-		const first = parts[0] + "/" + parts[1];
-		const last = parts[parts.length - 1];
-		const middle = parts.slice(2, -1);
-		let result = first + "/.../" + last;
-		if (result.length > maxLen) result = first + "/.../" + middle.slice(-2).join("/") + "/" + last;
-		if (result.length > maxLen) result = first + "/.../" + last;
-		return result;
-	}
 	let statusClass = /* @__PURE__ */ user_derived(() => indexStatus() === "indexing" ? "status-yellow" : indexStatus() === "ready" ? "status-green" : indexStatus() === "error" ? "status-red" : "");
 	var div = root_5();
 	var div_1 = child(div);
@@ -9118,10 +9129,10 @@ function StatusBar($$anchor, $$props) {
 		});
 		var text = sibling(node_1);
 		reset(span);
-		template_effect(($0) => {
+		template_effect(() => {
 			set_attribute(span, "title", $$props.path);
-			set_text(text, ` ${$0 ?? ""}`);
-		}, [() => truncatePath($$props.path)]);
+			set_text(text, ` ${$$props.path ?? ""}`);
+		});
 		append($$anchor, span);
 	};
 	var alternate = ($$anchor) => {
@@ -9164,7 +9175,6 @@ function StatusBar($$anchor, $$props) {
 	reset(div);
 	template_effect(() => set_class(div_2, 1, `dk-statusbar-right ${get(statusClass) ?? ""}`, "svelte-1we2aji"));
 	append($$anchor, div);
-	pop();
 }
 //#endregion
 //#region src/lib/helpers/tree.ts
@@ -9231,7 +9241,7 @@ function App($$anchor, $$props) {
 	let accOpen = /* @__PURE__ */ state("folder");
 	let showSearch = /* @__PURE__ */ state(false);
 	let showShortcuts = /* @__PURE__ */ state(false);
-	let modifier = /* @__PURE__ */ state("CTRL");
+	let modifier = proxy(IsMac() ? "⌘" : "CTRL");
 	let projectPath = /* @__PURE__ */ state(null);
 	let tabs = /* @__PURE__ */ state(proxy([]));
 	let nextTabId = /* @__PURE__ */ state(1);
@@ -9351,7 +9361,6 @@ function App($$anchor, $$props) {
 			set(indexCount, ev.data.done, true);
 			set(indexStatus, ev.data.state, true);
 		});
-		if (navigator.platform.toLowerCase().includes("mac")) set(modifier, "⌘");
 		set(recentFolders, await GetRecentFolders(), true);
 		const lastPath = await GetLastFolder();
 		if (lastPath) {
@@ -9592,7 +9601,7 @@ function App($$anchor, $$props) {
 			return get(showShortcuts);
 		},
 		get modifier() {
-			return get(modifier);
+			return modifier;
 		},
 		onclose: () => set(showShortcuts, false)
 	});

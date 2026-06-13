@@ -9,6 +9,7 @@
 
 <div class="dk-folder-list">
   {#each items as item}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div class="dk-folder-item" onclick={() => onselect(item.path)} role="button" tabindex="0" title={item.path}>
       <IconFolderOpen size={14} style="flex-shrink: 0;" />
       <span class="path-text">{item.path}</span>
@@ -26,15 +27,15 @@
     gap: 8px;
     padding: 6px 12px;
     font-size: 13px;
-    color: var(--text-2, #aaa);
+    color: var(--text-2);
     cursor: pointer;
     border-radius: 6px;
     white-space: nowrap;
     overflow: hidden;
   }
   .dk-folder-item:hover {
-    background: var(--accent-bg, rgba(59, 130, 246, 0.1));
-    color: var(--text-1, #eee);
+    background: var(--accent-bg);
+    color: var(--text-1);
   }
   .path-text {
     overflow: hidden;

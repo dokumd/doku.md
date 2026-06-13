@@ -59,6 +59,7 @@
 <div class="dk-tabs" bind:this={barEl}>
   <div class="dk-tabs-scroll">
     {#each visibleTabs as tab (tab.id)}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
         class="dk-tab {tab.active ? 'active' : ''}"
         onclick={() => onactivetab(tab.id)}
@@ -76,6 +77,7 @@
     {/each}
   </div>
   {#if showOverflow}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div
       class="dk-tabs-overflow"
       onclick={() => overflowOpen = !overflowOpen}
@@ -90,6 +92,7 @@
 {#if overflowOpen}
   <div class="dk-overflow-dropdown open">
     {#each overflowTabs as tab}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div class="dk-overflow-item" title={tab.path} onclick={() => { onactivetab(tab.id); overflowOpen = false }} role="button" tabindex="0">
         <IconFileText size={15} />
         <span>{tab.name}</span>

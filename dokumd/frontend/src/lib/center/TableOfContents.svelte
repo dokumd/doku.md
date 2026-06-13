@@ -15,6 +15,7 @@
   <div class="dk-toc">
     <div class="dk-toc-title">On this page</div>
     {#each items as item}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div
         class="dk-toc-item {item.active ? 'active' : ''} {item.level === 2 ? 'l2' : item.level === 3 ? 'l3' : ''}"
         onclick={() => onnavigate?.(item.id)}

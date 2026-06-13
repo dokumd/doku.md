@@ -18,6 +18,7 @@
 </script>
 
 {#each sections as section}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div
     class="dk-acc-header {open === section.id ? 'open' : ''}"
     onclick={() => ontoggle(section.id)}

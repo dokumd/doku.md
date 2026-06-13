@@ -12,6 +12,7 @@
 
 <div class="dk-bm-list">
   {#each items as item}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div class="dk-bm-item" onclick={() => onselect(item)} role="button" tabindex="0">
       <IconStarFilled size={14} />
       {item.name}

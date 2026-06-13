@@ -62,7 +62,10 @@
 </script>
 
 {#if show}
+  <!-- svelte-ignore a11y_interactive_supports_focus -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div class="dk-overlay" onclick={onclose} role="dialog">
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div class="dk-cmd-box" onclick={(e: MouseEvent) => e.stopPropagation()}>
       <div class="dk-cmd-input">
         <input

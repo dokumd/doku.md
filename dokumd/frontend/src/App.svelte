@@ -1,23 +1,5 @@
 <script lang="ts">
   import './app.css'
-  import {
-    IconSearch,
-    IconFolderOpen,
-    IconHelp,
-    IconMinus,
-    IconSquare,
-    IconX,
-    IconChevronDown,
-    IconChevronUp,
-    IconFolder,
-    IconFileText,
-    IconStar,
-    IconStarFilled,
-    IconDatabase,
-    IconCircleCheck,
-    IconAlertTriangle,
-    IconCircleX,
-  } from '@tabler/icons-svelte'
   import ShortcutsOverlay from './lib/overlays/ShortcutsOverlay.svelte'
   import SearchOverlay from './lib/overlays/SearchOverlay.svelte'
   import Titlebar from './lib/topbar/Titlebar.svelte'
@@ -31,18 +13,17 @@
   import ToastContainer from './lib/feedback/ToastContainer.svelte'
   import StatusBar from './lib/center/StatusBar.svelte'
   import { OpenFolder, GetFileTree, IndexProject, GetDocument, SaveOpenTabs, GetOpenTabs, AddRecentFolder, GetRecentFolders, GetLastFolder, AddBookmark, RemoveBookmark, GetBookmarks } from '../bindings/changeme/internal/services/folderservice.js'
-  import { Minimise, Maximise, Close } from '../bindings/changeme/internal/services/windowservice.js'
   import type { Tab, FileNode, TocItem, Toast } from './lib/types.js'
   import { buildTree } from './lib/helpers/tree.js'
   import { onMount } from 'svelte'
-  import { Events } from '@wailsio/runtime'
+  import { Events, System } from '@wailsio/runtime'
 
   // ─── State ───────────────────────────────────────────────────────────────
 
   let accOpen = $state<string>('folder')
   let showSearch = $state(false)
   let showShortcuts = $state(false)
-  let modifier = $state('CTRL')
+  let modifier = $state(System.IsMac() ? '⌘' : 'CTRL')
   let projectPath = $state<string | null>(null)
 
   // Open tabs — populated when the user clicks files in the tree.
@@ -199,9 +180,6 @@
       indexCount = ev.data.done
       indexStatus = ev.data.state
     })
-
-    // Detect platform for shortcut labels.
-    if (navigator.platform.toLowerCase().includes('mac')) modifier = '⌘'
 
     // Load recent folders and auto-open the last one if it still exists.
     recentFolders = await GetRecentFolders()
