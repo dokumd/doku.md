@@ -33,7 +33,7 @@ jobs:
 
       - name: Package (Linux)
         if: matrix.os == 'ubuntu-latest'
-        run: wails3 task package
+        run: wails3 task package EXTRA_TAGS=gtk3
         working-directory: dokumd
 
       - name: Package
