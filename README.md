@@ -43,12 +43,6 @@ cd dokumd && wails3 task linux:package EXTRA_TAGS=gtk3
 
 Output: `build/linux/appimage/dokumd-x86_64.AppImage`
 
-### With Docker
-
-```bash
-cd dokumd && wails3 build -platform linux -docker
-```
-
 ## Configuration
 
 Excluded directories are defined in `~/.config/dokumd/settings.json`.
