@@ -4,6 +4,7 @@
 
 /**
  * FolderService handles opening local folders via the native OS directory picker.
+ * It also manages the file system watcher for the currently open folder.
  * @module
  */
 
@@ -41,6 +42,14 @@ export function AddBookmark(rootPath, relPath, title) {
  */
 export function AddRecentFolder(path) {
     return $Call.ByID(1234210707, path);
+}
+
+/**
+ * CloseProject stops the file watcher and cleans up.
+ * @returns {$CancellablePromise<void>}
+ */
+export function CloseProject() {
+    return $Call.ByID(2080407592);
 }
 
 /**

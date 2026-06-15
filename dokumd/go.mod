@@ -3,6 +3,7 @@ module dokumd
 go 1.25.0
 
 require (
+	github.com/fsnotify/fsnotify v1.10.1
 	github.com/mattn/go-sqlite3 v1.14.45
 	github.com/wailsapp/wails/v3 v3.0.0-alpha.98
 	github.com/yuin/goldmark v1.8.2

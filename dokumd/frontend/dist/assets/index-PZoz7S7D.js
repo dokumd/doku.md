@@ -8356,6 +8356,7 @@ var $$createType1$1 = Array$1($$createType0$1);
 //#region bindings/dokumd/internal/services/folderservice.js
 /**
 * FolderService handles opening local folders via the native OS directory picker.
+* It also manages the file system watcher for the currently open folder.
 * @module
 */
 /**
@@ -8825,7 +8826,7 @@ delegate(["click"]);
 var root$10 = /* @__PURE__ */ from_html(`<div class="dk-local-search"><input type="text" placeholder="Find in document..."/> <button class="ls-btn" title="Previous match"><!></button> <button class="ls-btn" title="Next match"><!></button> <span class="ls-count"> </span> <button class="ls-btn" title="Close"><!></button></div>`);
 function LocalSearch($$anchor, $$props) {
 	push($$props, true);
-	let inputEl = prop($$props, "inputEl", 7);
+	let inputEl = prop($$props, "inputEl", 15);
 	var div = root$10();
 	var input = child(div);
 	remove_input_defaults(input);
@@ -8876,9 +8877,12 @@ function DocumentView($$anchor, $$props) {
 	let marks = [];
 	let currentIndex = /* @__PURE__ */ state(0);
 	let matchCount = /* @__PURE__ */ state(0);
-	let searchInputEl = void 0;
+	let searchInputEl = /* @__PURE__ */ state(void 0);
 	user_effect(() => {
-		if (showLocalSearch()) tick().then(() => {});
+		if (showLocalSearch()) tick().then(() => {
+			get(searchInputEl)?.focus();
+			get(searchInputEl)?.select();
+		});
 		else clearMarks();
 	});
 	function doSearch(query) {
@@ -9015,7 +9019,12 @@ function DocumentView($$anchor, $$props) {
 			get currentIndex() {
 				return get(currentIndex);
 			},
-			inputEl: searchInputEl
+			get inputEl() {
+				return get(searchInputEl);
+			},
+			set inputEl($$value) {
+				set(searchInputEl, $$value, true);
+			}
 		});
 	};
 	if_block(node_6, ($$render) => {
@@ -9591,6 +9600,30 @@ function App($$anchor, $$props) {
 			set(indexCount, ev.data.done, true);
 			set(indexStatus, ev.data.state, true);
 		});
+		On("file:changed", (ev) => {
+			const changedPath = ev.data.path;
+			const action = ev.data.action;
+			if (!get(projectPath)) return;
+			if (action === "modified" && changedPath === get(activeTabPath) && get(projectPath)) GetDocument(get(projectPath), changedPath).then((result) => {
+				set(activeDoc, {
+					html: result.html,
+					title: result.title,
+					headings: result.headings
+				}, true);
+			});
+			if (action === "created" || action === "deleted") {
+				if (action === "deleted") {
+					const tabToClose = get(tabs).find((t) => t.path === changedPath);
+					if (tabToClose) closeTab(tabToClose.id);
+				}
+				GetFileTree(get(projectPath)).then((files) => {
+					set(tree, buildTree(files), true);
+				});
+				GetBookmarks(get(projectPath)).then((list) => {
+					set(bookmarksList, list, true);
+				});
+			}
+		});
 		set(recentFolders, await GetRecentFolders(), true);
 		const lastPath = await GetLastFolder();
 		if (lastPath) {
@@ -9610,6 +9643,18 @@ function App($$anchor, $$props) {
 				set(nextTabId, saved.length + 1);
 			}
 		}
+		setInterval(async () => {
+			if (get(projectPath)) try {
+				await GetFileTree(get(projectPath));
+			} catch {
+				set(projectPath, null);
+				set(tree, [], true);
+				set(tabs, [], true);
+				set(activeDoc, null);
+				set(indexStatus, "idle");
+				set(indexCount, 0);
+			}
+		}, 1e4);
 	});
 	var fragment = root_1();
 	event("keydown", $window, handleKeydown);

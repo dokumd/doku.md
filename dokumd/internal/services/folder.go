@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"dokumd/internal/database"
@@ -20,7 +21,11 @@ import (
 )
 
 // FolderService handles opening local folders via the native OS directory picker.
-type FolderService struct{}
+// It also manages the file system watcher for the currently open folder.
+type FolderService struct {
+	mu      sync.Mutex
+	watcher *indexer.Watcher
+}
 
 // NewFolderService creates a new FolderService instance.
 func NewFolderService() *FolderService {
@@ -62,6 +67,14 @@ func (s *FolderService) GetFileTree(rootPath string) ([]scanner.FileEntry, error
 // The frontend should call GetFileTree first to display the tree immediately,
 // then call IndexProject to start background indexing.
 func (s *FolderService) IndexProject(rootPath string) error {
+	s.mu.Lock()
+	// Stop any previous watcher before starting a new one.
+	if s.watcher != nil {
+		s.watcher.Stop()
+		s.watcher = nil
+	}
+	s.mu.Unlock()
+
 	idx, err := indexer.New(rootPath, func(done, total int, state string) {
 		application.Get().Event.Emit("index:progress", map[string]any{
 			"done":  done,
@@ -93,8 +106,35 @@ func (s *FolderService) IndexProject(rootPath string) error {
 	idx.EnqueueBatch(relPaths)
 	idx.Start()
 
+	// Start file system watcher.
+	watcher, err := indexer.NewWatcher(rootPath, idx, func(ev indexer.FileEvent) {
+		log.Printf("file event: %s %s", ev.Action, ev.RelPath)
+		application.Get().Event.Emit("file:changed", map[string]any{
+			"path":   ev.RelPath,
+			"action": ev.Action,
+		})
+	}, excludes)
+	if err != nil {
+		log.Printf("failed to start watcher: %v", err)
+	} else {
+		watcher.Start()
+		s.mu.Lock()
+		s.watcher = watcher
+		s.mu.Unlock()
+	}
+
 	log.Printf("indexer started for %s: %d files", rootPath, len(relPaths))
 	return nil
+}
+
+// CloseProject stops the file watcher and cleans up.
+func (s *FolderService) CloseProject() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.watcher != nil {
+		s.watcher.Stop()
+		s.watcher = nil
+	}
 }
 
 // DocumentResult is the response returned by GetDocument.

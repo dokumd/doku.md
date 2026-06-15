@@ -201,6 +201,39 @@
       indexStatus = ev.data.state
     })
 
+    Events.On('file:changed', (ev: any) => {
+      const changedPath = ev.data.path as string
+      const action = ev.data.action as string
+      if (!projectPath) return
+
+      // Se o ficheiro alterado está aberto no tab ativo, rerender.
+      if (action === 'modified' && changedPath === activeTabPath && projectPath) {
+        GetDocument(projectPath, changedPath).then((result) => {
+          activeDoc = {
+            html: result.html,
+            title: result.title,
+            headings: result.headings,
+          }
+        })
+      }
+
+      // Se o ficheiro foi apagado (ou renomeado — o watcher vê como delete do antigo):
+      // fechar o tab se estiver aberto, atualizar tree, recarregar bookmarks.
+      if (action === 'created' || action === 'deleted') {
+        if (action === 'deleted') {
+          const tabToClose = tabs.find(t => t.path === changedPath)
+          if (tabToClose) closeTab(tabToClose.id)
+        }
+        GetFileTree(projectPath).then((files) => {
+          tree = buildTree(files)
+        })
+        // Recarregar bookmarks (o bookmark com path antigo foi removido).
+        GetBookmarks(projectPath).then((list) => {
+          bookmarksList = list
+        })
+      }
+    })
+
     // Load recent folders and auto-open the last one if it still exists.
     recentFolders = await GetRecentFolders()
     const lastPath = await GetLastFolder()
@@ -222,6 +255,24 @@
         nextTabId = saved.length + 1
       }
     }
+
+    // Timer de health check: verifica a cada 10s se a pasta principal ainda existe.
+    // Se tiver sido apagada ou renomeada, fecha o projeto.
+    setInterval(async () => {
+      if (projectPath) {
+        try {
+          // Tentar listar a pasta — se falhar, o projeto fechou.
+          await GetFileTree(projectPath)
+        } catch {
+          projectPath = null
+          tree = []
+          tabs = []
+          activeDoc = null
+          indexStatus = 'idle'
+          indexCount = 0
+        }
+      }
+    }, 10000)
   })
 </script>
 
