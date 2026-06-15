@@ -109,8 +109,10 @@ Custom polling — too expensive for 10k files.
 
 The frontend communicates with Go via bound methods and events — no custom IPC needed.
 
-**Build considerations**: Use `wails3 build -platform linux/darwin/windows` for
-cross-platform builds. macOS requires `-ldflags` for signing.
+**Build considerations**: Use `wails3 task linux:package EXTRA_TAGS=gtk3` for
+Linux AppImage builds. macOS and Windows builds require GitHub Actions with
+native runners (`macos-latest`, `windows-latest`). macOS also requires
+Apple Developer signing for distribution.
 
 ---
 

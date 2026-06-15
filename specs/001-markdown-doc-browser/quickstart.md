@@ -30,10 +30,10 @@ Para build de produção com GTK3:
 wails3 build -tags gtk3 -platform linux
 ```
 
-Para build de produção com Docker (não precisa de libs nativas):
+Para build de produção (AppImage):
 
 ```bash
-wails3 build -platform linux/darwin/windows -docker
+cd dokumd && wails3 task linux:package EXTRA_TAGS=gtk3
 ```
 
 ## Setup
