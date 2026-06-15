@@ -162,15 +162,20 @@
       recentFolders = await GetRecentFolders()
       bookmarksList = await GetBookmarks(folderPath)
 
+      // Construir set de paths válidos para filtrar tabs persistentes
+      // que já não existem em disco (ex: ficheiro renomeado/apagado).
+      const validPaths = new Set(files.map((f: any) => f.path))
+
       const saved = await GetOpenTabs(folderPath)
       if (saved.length > 0) {
-        tabs = saved.map((t: any, i: number) => ({
+        const restored = saved.filter((t: any) => validPaths.has(t.relPath))
+        tabs = restored.map((t: any, i: number) => ({
           id: String(i + 1),
           name: t.relPath.split('/').pop() ?? t.relPath,
           path: t.relPath,
           active: t.isActive ?? i === 0,
         }))
-        nextTabId = saved.length + 1
+        nextTabId = restored.length + 1
       } else {
         tabs = []
       }
@@ -242,17 +247,20 @@
       indexStatus = 'indexing'
       const files = await GetFileTree(lastPath)
       tree = buildTree(files)
+      const validPaths = new Set(files.map((f: any) => f.path))
+
       IndexProject(lastPath)
       bookmarksList = await GetBookmarks(lastPath)
       const saved = await GetOpenTabs(lastPath)
       if (saved.length > 0) {
-        tabs = saved.map((t: any, i: number) => ({
+        const restored = saved.filter((t: any) => validPaths.has(t.relPath))
+        tabs = restored.map((t: any, i: number) => ({
           id: String(i + 1),
           name: t.relPath.split('/').pop() ?? t.relPath,
           path: t.relPath,
           active: t.isActive ?? i === 0,
         }))
-        nextTabId = saved.length + 1
+        nextTabId = restored.length + 1
       }
     }
 

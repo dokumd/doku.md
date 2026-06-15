@@ -19,12 +19,7 @@
 <div class="dk-titlebar">
   <div class="dk-brand">
     <div class="dk-logo">
-      <svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white">
-        <rect x="1"   y="1"   width="4.5" height="4.5" rx="1"/>
-        <rect x="7.5" y="1"   width="4.5" height="4.5" rx="1"/>
-        <rect x="1"   y="7.5" width="4.5" height="4.5" rx="1"/>
-        <circle cx="9.75" cy="9.75" r="2.25"/>
-      </svg>
+      <img src="/logo.svg" alt="doku.md" style="width:13px;height:13px" />
     </div>
     <span class="dk-name">doku<span class="ext">.md</span></span>
   </div>

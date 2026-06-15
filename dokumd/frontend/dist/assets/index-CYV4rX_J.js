@@ -8667,7 +8667,7 @@ function Minimise() {
 }
 //#endregion
 //#region src/lib/topbar/Titlebar.svelte
-var root$12 = /* @__PURE__ */ from_html(`<div class="dk-titlebar"><div class="dk-brand"><div class="dk-logo"><svg viewBox="0 0 13 13" style="width:13px;height:13px;fill:white"><rect x="1" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"></rect><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"></rect><circle cx="9.75" cy="9.75" r="2.25"></circle></svg></div> <span class="dk-name">doku<span class="ext">.md</span></span></div> <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div> <div class="dk-titlebar-actions"><button class="dk-btn"><span>Search</span> <kbd>CTRL+K</kbd></button> <button class="dk-btn"><span>Browse</span> <kbd>CTRL+O</kbd></button></div> <button class="dk-btn" style="padding: 5px 10px"><span>?</span></button> <div class="dk-dots"><div class="dk-dot"><!></div>  <div class="dk-dot"><!></div>  <div class="dk-dot"><!></div></div></div>`);
+var root$12 = /* @__PURE__ */ from_html(`<div class="dk-titlebar"><div class="dk-brand"><div class="dk-logo"><img src="/logo.svg" alt="doku.md" style="width:13px;height:13px"/></div> <span class="dk-name">doku<span class="ext">.md</span></span></div> <div class="dk-titlebarcenter" style="--wails-draggable: drag"></div> <div class="dk-titlebar-actions"><button class="dk-btn"><span>Search</span> <kbd>CTRL+K</kbd></button> <button class="dk-btn"><span>Browse</span> <kbd>CTRL+O</kbd></button></div> <button class="dk-btn" style="padding: 5px 10px"><span>?</span></button> <div class="dk-dots"><div class="dk-dot"><!></div>  <div class="dk-dot"><!></div>  <div class="dk-dot"><!></div></div></div>`);
 function Titlebar($$anchor, $$props) {
 	var div = root$12();
 	var div_1 = sibling(child(div), 2);
@@ -9550,20 +9550,23 @@ function App($$anchor, $$props) {
 		if (folderPath) {
 			set(projectPath, folderPath, true);
 			set(indexStatus, "indexing");
-			set(tree, buildTree(await GetFileTree(folderPath)), true);
+			const files = await GetFileTree(folderPath);
+			set(tree, buildTree(files), true);
 			await IndexProject(folderPath);
 			AddRecentFolder(folderPath);
 			set(recentFolders, await GetRecentFolders(), true);
 			set(bookmarksList, await GetBookmarks(folderPath), true);
+			const validPaths = new Set(files.map((f) => f.path));
 			const saved = await GetOpenTabs(folderPath);
 			if (saved.length > 0) {
-				set(tabs, saved.map((t, i) => ({
+				const restored = saved.filter((t) => validPaths.has(t.relPath));
+				set(tabs, restored.map((t, i) => ({
 					id: String(i + 1),
 					name: t.relPath.split("/").pop() ?? t.relPath,
 					path: t.relPath,
 					active: t.isActive ?? i === 0
 				})), true);
-				set(nextTabId, saved.length + 1);
+				set(nextTabId, restored.length + 1);
 			} else set(tabs, [], true);
 		}
 	}
