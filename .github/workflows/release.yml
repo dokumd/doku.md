@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Wails3
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha.98
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+
+      - name: Package (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: wails3 task package
+        working-directory: dokumd
+
+      - name: Package
+        if: matrix.os != 'ubuntu-latest'
+        run: wails3 task package
+        working-directory: dokumd
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          path: dokumd/bin/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build-ubuntu-latest/*
+            build-windows-latest/*
+            build-macos-latest/*
