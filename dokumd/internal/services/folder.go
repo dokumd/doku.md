@@ -4,6 +4,7 @@ package services
 
 import (
 	"database/sql"
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,13 +24,15 @@ import (
 // FolderService handles opening local folders via the native OS directory picker.
 // It also manages the file system watcher for the currently open folder.
 type FolderService struct {
-	mu      sync.Mutex
-	watcher *indexer.Watcher
+	mu           sync.Mutex
+	watcher      *indexer.Watcher
+	migrationsFS fs.FS
 }
 
-// NewFolderService creates a new FolderService instance.
-func NewFolderService() *FolderService {
-	return &FolderService{}
+// NewFolderService creates a new FolderService instance. The migrationsFS
+// must contain the "migrations" folder with local SQL migrations.
+func NewFolderService(migrationsFS fs.FS) *FolderService {
+	return &FolderService{migrationsFS: migrationsFS}
 }
 
 // OpenFolder opens the native OS directory picker and returns the selected path.
@@ -81,7 +84,7 @@ func (s *FolderService) IndexProject(rootPath string) error {
 			"total": total,
 			"state": state,
 		})
-	})
+	}, s.migrationsFS)
 	if err != nil {
 		return err
 	}

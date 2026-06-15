@@ -6,6 +6,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -18,8 +19,9 @@ import (
 var DB *sql.DB
 
 // Init opens (or creates) the application database at the data directory.
-// Creates the app_settings table if it does not exist.
-func Init() error {
+// The migrationsFS parameter is an fs.FS that contains the "migrations" folder.
+// In development it comes from os.DirFS, in production from embed.FS.
+func Init(migrationsFS fs.FS) error {
 	dataDir, err := config.DataDir()
 	if err != nil {
 		return fmt.Errorf("resolve data dir: %w", err)
@@ -45,7 +47,7 @@ func Init() error {
 	}
 
 	// Run global migrations (creates _migrations table, can be extended later).
-	if err := RunMigrations(db, "migrations/global"); err != nil {
+	if err := RunMigrations(db, migrationsFS, "global"); err != nil {
 		db.Close()
 		return fmt.Errorf("global migrations: %w", err)
 	}

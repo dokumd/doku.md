@@ -4,25 +4,27 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"os"
-	"path/filepath"
+	"io/fs"
 	"sort"
 	"strings"
 )
 
-// RunMigrations reads all .sql files from the given directory (sorted by name),
-// checks which have already been applied by querying the _migrations table,
-// and executes any that are missing.
+// RunMigrations reads all .sql files from migrationsFS at the given prefix
+// (sorted by name), checks which have already been applied by querying the
+// _migrations table, and executes any that are missing.
 //
 // The first migration (000_migrations.sql) creates the _migrations table.
 // For that file, the query against _migrations will fail because the table
 // does not exist yet — that is treated as "not yet applied", and the file
 // is executed. All subsequent migrations find the table in place and work
 // normally.
-func RunMigrations(db *sql.DB, migrationsDir string) error {
-	entries, err := os.ReadDir(migrationsDir)
+//
+// Using fs.FS allows the same code to work both in development (os.DirFS)
+// and in production (embed.FS from the compiled binary).
+func RunMigrations(db *sql.DB, migrationsFS fs.FS, prefix string) error {
+	entries, err := fs.ReadDir(migrationsFS, prefix)
 	if err != nil {
-		return fmt.Errorf("read migrations dir %s: %w", migrationsDir, err)
+		return fmt.Errorf("read migrations dir %s: %w", prefix, err)
 	}
 
 	var files []string
@@ -32,6 +34,7 @@ func RunMigrations(db *sql.DB, migrationsDir string) error {
 		}
 	}
 	sort.Strings(files)
+	_ = prefix // prefix is used for fs.ReadDir above; individual files are read with full path
 
 	for _, name := range files {
 		applied, checkErr := isMigrationApplied(db, name)
@@ -39,22 +42,20 @@ func RunMigrations(db *sql.DB, migrationsDir string) error {
 			continue
 		}
 
-		// If the check failed because _migrations does not exist, or simply
-		// because this migration is not in the table, execute the file.
 		if checkErr != nil && !isNoSuchTable(checkErr) {
 			return fmt.Errorf("check migration %s: %w", name, checkErr)
 		}
 
-		sqlBytes, err := os.ReadFile(filepath.Join(migrationsDir, name))
+		path := prefix + "/" + name
+		sqlBytes, err := fs.ReadFile(migrationsFS, path)
 		if err != nil {
-			return fmt.Errorf("read migration %s: %w", name, err)
+			return fmt.Errorf("read migration %s: %w", path, err)
 		}
 
 		if _, err := db.Exec(string(sqlBytes)); err != nil {
 			return fmt.Errorf("execute migration %s: %w", name, err)
 		}
 
-		// Register as applied (table now exists after 000_migrations.sql).
 		if _, err := db.Exec("INSERT INTO _migrations (name) VALUES (?)", name); err != nil {
 			return fmt.Errorf("record migration %s: %w", name, err)
 		}

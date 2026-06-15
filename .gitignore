@@ -1,3 +1,5 @@
+dokumd/build/linux/appimage/
+dokumd/bin/
 .task
 bin
 frontend/dist

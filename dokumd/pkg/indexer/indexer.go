@@ -8,6 +8,7 @@ package indexer
 import (
 	"database/sql"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sync"
@@ -45,6 +46,7 @@ type ProgressFunc func(done, total int, state string)
 type Indexer struct {
 	db          *sql.DB
 	projectRoot string
+	migrationsFS fs.FS
 	queue       chan IndexRequest
 	status      Status
 	mu          sync.RWMutex
@@ -54,9 +56,9 @@ type Indexer struct {
 }
 
 // New opens (or creates) the index database for the given project root.
-// It runs local migrations, then returns a ready-to-use Indexer.
-// The caller must call Start() to begin processing the queue.
-func New(projectRoot string, onProgress ProgressFunc) (*Indexer, error) {
+// It runs local migrations via the provided fs.FS, then returns a
+// ready-to-use Indexer. The caller must call Start() to begin processing.
+func New(projectRoot string, onProgress ProgressFunc, migrationsFS fs.FS) (*Indexer, error) {
 	dokumdDir := filepath.Join(projectRoot, ".dokumd")
 	if err := os.MkdirAll(dokumdDir, 0755); err != nil {
 		return nil, fmt.Errorf("create .dokumd dir: %w", err)
@@ -72,15 +74,16 @@ func New(projectRoot string, onProgress ProgressFunc) (*Indexer, error) {
 		return nil, fmt.Errorf("ping index db: %w", err)
 	}
 
-	// Run local migrations.
-	if err := database.RunMigrations(db, "migrations/local"); err != nil {
+	// Run local migrations using the provided fs.FS.
+	if err := database.RunMigrations(db, migrationsFS, "local"); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("run migrations: %w", err)
 	}
 
 	idx := &Indexer{
-		db:          db,
-		projectRoot: projectRoot,
+		db:           db,
+		projectRoot:  projectRoot,
+		migrationsFS: migrationsFS,
 		queue:       make(chan IndexRequest, 1024),
 		status:      Status{State: "idle"},
 		onProgress:  onProgress,

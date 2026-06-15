@@ -12,19 +12,30 @@ sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
 ```
 
 **Ubuntu 22.04**: O GTK4 dos repositórios é 4.6 (insuficiente para Wails3
-alpha.93+). Forçar GTK3 editando `build/config.yml`:
+alpha.93+). É necessário forçar GTK3 editando `build/config.yml` na
+secção `dev_mode > executes`:
 
 ```yaml
-# secção dev_mode > executes
-- cmd: wails3 build DEV=true EXTRA_TAGS=gtk3
+- cmd: wails3 build DEV=true EXTRA_TAGS=gtk3,fts5
   type: blocking
 ```
 
-Build de produção com GTK3:
+**Ubuntu 24.04+ / versões futuras**: Se o teu GTK4 for 4.10 ou superior,
+podes remover `gtk3` e usar apenas `fts5`:
+
+```yaml
+- cmd: wails3 build DEV=true EXTRA_TAGS=fts5
+  type: blocking
+```
+
+Para verificar a versão do GTK4 instalada:
 
 ```bash
-wails3 build -tags gtk3 -platform linux
+pkg-config --modversion gtk4
 ```
+
+Se encontrares erros de compilação relacionados com GTK (`GtkFileDialog`,
+`GtkNativeDialog`), o GTK4 é demasiado antigo. Adiciona `EXTRA_TAGS=gtk3`.
 
 **Fedora**:
 ```bash
@@ -36,46 +47,60 @@ sudo dnf install gtk4-devel webkitgtk6.0-devel
 sudo pacman -S gtk4 webkitgtk-6.0
 ```
 
-### Build de produção com Docker
-
-A build de produção pode ser feita com Docker, evitando a necessidade de instalar
-dependências nativas na máquina de desenvolvimento:
+## Build de desenvolvimento
 
 ```bash
-wails3 build -platform linux/darwin/windows -docker
+wails3 dev
 ```
 
-Nota: a primeira build é lenta porque faz pull da imagem e instala dependências.
-O Docker é apenas necessário para builds de produção — o desenvolvimento com
-hot-reload (`wails3 dev`) continua a precisar das libs nativas.
+O ficheiro `build/config.yml` já inclui `EXTRA_TAGS=gtk3,fts5`. Se
+estiveres numa versão recente do Ubuntu (24.04+) podes remover `gtk3`.
 
-## Platform-specific builds
+## Build de produção
 
-### Linux (AppImage)
+### Linux (AppImage — recomendado)
+
+O AppImage inclui todas as dependências GTK e WebKit, funcionando em
+qualquer distribuição Linux **sem necessidade de instalar nada**.
+
+**Build nativa (precisa das libs instaladas):**
+
+```bash
+wails3 task linux:package EXTRA_TAGS=gtk3
+```
+
+**Com Docker** (recomendado — não precisa de dependências nativas):
 
 ```bash
 wails3 build -platform linux -docker
-# O output estará em build/bin/
+```
+
+Output: `build/linux/appimage/dokumd.AppImage`
+
+**Sem Docker** (precisa das libs nativas instaladas):
+
+```bash
+wails3 build -tags "gtk3 fts5" -platform linux
 ```
 
 ### macOS
 
 ```bash
 wails3 build -platform darwin -docker
-# Gera .app bundle. Para notarização é preciso assinatura Apple Developer.
 ```
+
+Gera `.app bundle`. Para notarização é preciso assinatura Apple Developer.
 
 ### Windows
 
 ```bash
 wails3 build -platform windows -docker
-# Gera .exe. Para MSI installer é necessário tooling adicional (WiX Toolset).
 ```
+
+Gera `.exe`. Para MSI installer é necessário WiX Toolset.
 
 ## Distribuição
 
-Para utilizadores finais, recomenda-se:
-
-- **Linux**: AppImage ou Flatpak (inclui todas as dependências)
-- **macOS**: .app bundle (pode ser distribuído via zip ou DMG)
-- **Windows**: MSI installer ou zip com o executável
+- **Linux**: AppImage (inclui todas as dependências — recomendado)
+- **macOS**: .app bundle (zip ou DMG)
+- **Windows**: .exe (zip ou MSI installer)

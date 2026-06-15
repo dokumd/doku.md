@@ -374,10 +374,15 @@
             {@html activeDoc.html}
           </DocumentView>
         {:else}
-          <DocumentView title="doku.md" path="">
-            <p style="color: var(--muted); padding: 2rem; display: flex;">
-              Open a folder or <button class="dk-btn" onclick={() => openFolder()}>Browse</button> documentation.
-            </p>
+          <DocumentView title="" path="">
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+              <img src="/logo.svg" alt="" style="width: 200px; height: 200px;" />
+              <h1>doku<span style="font-weight: 100; color: var(--text-2); font-size: 14px;">.md</span></h1>
+              <p style="color: var(--muted); padding: 2rem; display: flex;">
+                <button class="dk-btn" onclick={() => openFolder()}>Browse documentation</button>
+              </p>
+            </div>
+
           </DocumentView>
         {/if}
 

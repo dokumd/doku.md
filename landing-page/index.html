@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>doku.md — Browse your project's documentation, fast</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent-rgb: 61, 235, 106;
+            --accent:        rgba(var(--accent-rgb), 1);
+            --accent-bg:     rgba(var(--accent-rgb), 0.08);
+            --accent-border: rgba(var(--accent-rgb), 0.2);
+
+            --text-1: #F4F4F6;
+            --text-2: #9898A4;
+            --text-3: #5C5C66;
+
+            --bg-1: #161618;
+            --bg-2: #1F1F22;
+            --bg-3: #28282C;
+
+            --border: #2E2E32;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; }
+
+        body {
+            background: var(--bg-1);
+            color: var(--text-1);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        .wrap {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        /* ─── Nav ─────────────────────────────────────────────── */
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 28px 0;
+            border-bottom: 0.5px solid var(--border);
+        }
+
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand svg { width: 22px; height: 22px; }
+        .brand-name { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+        .brand-name .ext { color: var(--text-2); font-weight: 400; }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            font-size: 14px;
+            color: var(--text-2);
+        }
+        .nav-links a { color: inherit; text-decoration: none; transition: color 0.15s; }
+        .nav-links a:hover { color: var(--text-1); }
+
+        .nav-cta {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 8px 18px;
+            border-radius: 7px;
+            border: 0.5px solid var(--border);
+            color: var(--text-1);
+            text-decoration: none;
+            transition: border-color 0.15s, background 0.15s;
+        }
+        .nav-cta:hover { border-color: var(--accent-border); background: var(--accent-bg); }
+
+        /* ─── Hero ────────────────────────────────────────────── */
+        .hero {
+            padding: 120px 0 80px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--accent);
+            background: var(--accent-bg);
+            border: 0.5px solid var(--accent-border);
+            border-radius: 100px;
+            padding: 6px 16px;
+            margin-bottom: 32px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 24px;
+        }
+        .hero h1 .accent { color: var(--accent); }
+
+        .hero p {
+            font-size: 19px;
+            color: var(--text-2);
+            max-width: 540px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+        }
+
+        .btn-primary {
+            font-size: 15px;
+            font-weight: 500;
+            padding: 12px 26px;
+            border-radius: 8px;
+            background: var(--accent);
+            color: var(--bg-1);
+            text-decoration: none;
+            transition: opacity 0.15s;
+        }
+        .btn-primary:hover { opacity: 0.9; }
+
+        .btn-secondary {
+            font-size: 15px;
+            font-weight: 500;
+            padding: 12px 26px;
+            border-radius: 8px;
+            border: 0.5px solid var(--border);
+            color: var(--text-1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: border-color 0.15s;
+        }
+        .btn-secondary:hover { border-color: var(--text-3); }
+
+        /* ─── Screenshot ──────────────────────────────────────── */
+        .screenshot-wrap {
+            margin-top: 64px;
+            border-radius: 14px;
+            border: 0.5px solid var(--border);
+            background: var(--bg-2);
+            padding: 12px;
+            box-shadow: 0 40px 100px -40px rgba(0,0,0,0.6);
+        }
+
+        .screenshot {
+            border-radius: 8px;
+            overflow: hidden;
+            border: 0.5px solid var(--border);
+            aspect-ratio: 16/9.2;
+            background: var(--bg-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-3);
+        }
+
+        /* ─── Features ────────────────────────────────────────── */
+        .features {
+            padding: 120px 0;
+            border-top: 0.5px solid var(--border);
+        }
+
+        .features-head {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .features-head .label {
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+
+        .features-head h2 {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 0.5px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .feature {
+            background: var(--bg-2);
+            padding: 32px;
+        }
+
+        .feature-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            background: var(--accent-bg);
+            border: 0.5px solid var(--accent-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: var(--accent);
+            font-size: 18px;
+        }
+
+        .feature h3 {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .soon {
+            font-size: 11px;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-3);
+            border: 0.5px solid var(--border);
+            border-radius: 5px;
+            padding: 2px 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .feature p {
+            font-size: 14px;
+            color: var(--text-2);
+            line-height: 1.7;
+        }
+
+        /* ─── Stack ───────────────────────────────────────────── */
+        .stack {
+            padding: 100px 0;
+            border-top: 0.5px solid var(--border);
+            text-align: center;
+        }
+
+        .stack .label {
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 28px;
+        }
+
+        .stack-items {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .stack-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-2);
+            background: var(--bg-2);
+            border: 0.5px solid var(--border);
+            border-radius: 7px;
+            padding: 8px 16px;
+        }
+
+        /* ─── Footer ──────────────────────────────────────────── */
+        footer {
+            padding: 40px 0;
+            border-top: 0.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-3);
+        }
+
+        footer a { color: var(--text-2); text-decoration: none; }
+        footer a:hover { color: var(--text-1); }
+
+        .footer-links { display: flex; gap: 24px; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 40px; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+
+    <!-- ─── Nav ─────────────────────────────────────────── -->
+    <nav>
+        <div class="brand">
+            <svg viewBox="0 0 13 13" fill="var(--accent)">
+                <rect x="1"   y="1"   width="4.5" height="4.5" rx="1"/>
+                <rect x="7.5" y="1"   width="4.5" height="4.5" rx="1"/>
+                <rect x="1"   y="7.5" width="4.5" height="4.5" rx="1"/>
+                <circle cx="9.75" cy="9.75" r="2.25"/>
+            </svg>
+            <span class="brand-name">doku<span class="ext">.md</span></span>
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#stack">Tech stack</a>
+            <a href="https://github.com/dokumd/doku.md">GitHub</a>
+        </div>
+        <a href="#download" class="nav-cta">Download</a>
+    </nav>
+
+    <!-- ─── Hero ────────────────────────────────────────── -->
+    <section class="hero">
+        <div class="hero-badge">$ open ./docs</div>
+        <h1>Your project's docs,<br>at <span class="accent">terminal speed</span></h1>
+        <p>
+            doku.md is a fast, native desktop app for browsing, searching, and
+            understanding Markdown documentation — built for developers who live
+            in specs, plans, and tasks.
+        </p>
+        <div class="hero-actions">
+            <a href="#download" class="btn-primary">Download for free</a>
+            <a href="https://github.com/dokumd/doku.md" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+                View source
+            </a>
+        </div>
+
+        <div class="screenshot-wrap">
+            <div class="screenshot">
+                app screenshot — three-column layout, file tree, document view, TOC
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Features ────────────────────────────────────── -->
+    <section class="features" id="features">
+        <div class="features-head">
+            <div class="label">Built for reading, not editing</div>
+            <h2>Everything you need to recover context</h2>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature">
+                <div class="feature-icon">⌘</div>
+                <h3>Full-text search</h3>
+                <p>SQLite FTS5 indexes every Markdown file the moment you open a project. Search by title, path, or content — results in under a second, even across thousands of files.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⟲</div>
+                <h3>Live sync</h3>
+                <p>A file watcher keeps the index up to date automatically. Create, edit, move, or delete files — doku.md reflects the change within seconds, no restart needed.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">▤</div>
+                <h3>Three-column reading</h3>
+                <p>Navigation, document, and table of contents — side by side. Tabs for multi-document workflows, bookmarks for quick access to what matters most.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⌗</div>
+                <h3>Spec-aware</h3>
+                <p>Built by someone who lives in spec.md, plan.md, and tasks.md every day. doku.md understands the structure that AI-assisted development produces.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⊞</div>
+                <h3>Plugin system <span class="soon">soon</span></h3>
+                <p>Detect project structures — Spec Kit, OpenSpec, ADRs, changelogs — and surface them with custom views. Planned for a future release.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">○</div>
+                <h3>Works offline</h3>
+                <p>No account, no cloud, no telemetry. Everything runs locally — your documentation never leaves your machine. Semantic search via local AI is planned for a future release <span class="soon">soon</span>.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Stack ───────────────────────────────────────── -->
+    <section class="stack" id="stack">
+        <div class="label">Native. Fast. Open source.</div>
+        <div class="stack-items">
+            <span class="stack-item">Wails 3</span>
+            <span class="stack-item">Go</span>
+            <span class="stack-item">Svelte 5</span>
+            <span class="stack-item">TypeScript</span>
+            <span class="stack-item">SQLite + FTS5</span>
+            <span class="stack-item">Linux · macOS · Windows</span>
+        </div>
+    </section>
+
+    <!-- ─── Footer ──────────────────────────────────────── -->
+    <footer>
+        <span>© 2026 doku.md</span>
+        <div class="footer-links">
+            <a href="https://github.com/dokumd/doku.md">GitHub</a>
+            <a href="#">Documentation</a>
+            <a href="#">Releases</a>
+        </div>
+    </footer>
+
+</div>
+
+</body>
+</html>
