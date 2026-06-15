@@ -389,7 +389,7 @@
         <StatusBar path={projectPath} indexedCount={indexCount} {indexStatus} />
       </div>
 
-      <TableOfContents items={activeDoc?.headings ?? []} indexedCount={indexCount} status={indexStatus === 'ready' ? 'Ready' : indexStatus === 'indexing' ? 'Indexing...' : 'Idle'} onnavigate={scrollToHeading} />
+      <TableOfContents items={activeDoc?.headings ?? []} fileCount={indexCount || tree.flatMap(n => n.children ?? []).length} bookmarkCount={bookmarksList.length} onnavigate={scrollToHeading} />
 
       <!-- ─── Search overlay ────────────────────────────────────── -->
       <SearchOverlay

@@ -8516,7 +8516,7 @@ var $$createType10 = Array$1($$createType9);
 //#region src/lib/overlays/SearchOverlay.svelte
 var root$13 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"><span> </span> <span class="path"> </span></div>`);
 var root_1$9 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted"> </span></div>`);
-var root_2$4 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Open a folder to search.</span></div>`);
+var root_2$5 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Open a folder to search.</span></div>`);
 var root_3$2 = /* @__PURE__ */ from_html(`<div class="dk-cmd-r"><span class="muted">Type to search documentation...</span></div>`);
 var root_4$2 = /* @__PURE__ */ from_html(`<div class="dk-overlay" role="dialog"><div class="dk-cmd-box"><div class="dk-cmd-input"><input type="text" placeholder="Search documentation..."/></div> <div class="dk-cmd-results"><!></div> <div class="dk-cmd-footer"><div class="dk-cmd-hint"><kbd>↵</kbd> open</div> <div class="dk-cmd-hint"><kbd>↑↓</kbd> navigate</div> <div class="dk-cmd-hint"><kbd>esc</kbd> close</div></div></div></div>`);
 function SearchOverlay($$anchor, $$props) {
@@ -8602,7 +8602,7 @@ function SearchOverlay($$anchor, $$props) {
 			append($$anchor, div_5);
 		};
 		var consequent_2 = ($$anchor) => {
-			append($$anchor, root_2$4());
+			append($$anchor, root_2$5());
 		};
 		var alternate = ($$anchor) => {
 			append($$anchor, root_3$2());
@@ -8716,7 +8716,7 @@ delegate(["dblclick", "click"]);
 //#region src/lib/center/TabBar.svelte
 var root$11 = /* @__PURE__ */ from_html(`<div role="tab" tabindex="0"><!> <span class="tab-label"> </span> <span class="close" role="button" tabindex="0"><!></span></div>`);
 var root_1$8 = /* @__PURE__ */ from_html(`<div class="dk-tabs-overflow" role="button" tabindex="0"><!></div>`);
-var root_2$3 = /* @__PURE__ */ from_html(`<div class="dk-overflow-item" role="button" tabindex="0"><!> <span> </span></div>`);
+var root_2$4 = /* @__PURE__ */ from_html(`<div class="dk-overflow-item" role="button" tabindex="0"><!> <span> </span></div>`);
 var root_3$1 = /* @__PURE__ */ from_html(`<div class="dk-overflow-dropdown open"></div>`);
 var root_4$1 = /* @__PURE__ */ from_html(`<div class="dk-tabs"><div class="dk-tabs-scroll"></div> <!></div> <!>`, 1);
 function TabBar($$anchor, $$props) {
@@ -8794,7 +8794,7 @@ function TabBar($$anchor, $$props) {
 	var consequent_1 = ($$anchor) => {
 		var div_4 = root_3$1();
 		each(div_4, 21, () => get(overflowTabs), index, ($$anchor, tab) => {
-			var div_5 = root_2$3();
+			var div_5 = root_2$4();
 			var node_5 = child(div_5);
 			File_text(node_5, { size: 15 });
 			var span_2 = sibling(node_5, 2);
@@ -8869,7 +8869,7 @@ delegate([
 //#region src/lib/center/DocumentView.svelte
 var root$9 = /* @__PURE__ */ from_html(`<span role="button" tabindex="0"><!></span>`);
 var root_1$7 = /* @__PURE__ */ from_html(`<h1> </h1> <div class="meta"><span> </span> <!></div>`, 1);
-var root_2$2 = /* @__PURE__ */ from_html(`<div class="dk-doc"><!> <!> <!></div>`);
+var root_2$3 = /* @__PURE__ */ from_html(`<div class="dk-doc"><!> <!> <!></div>`);
 function DocumentView($$anchor, $$props) {
 	push($$props, true);
 	let title = prop($$props, "title", 3, ""), path = prop($$props, "path", 3, ""), bookmarked = prop($$props, "bookmarked", 3, false), showLocalSearch = prop($$props, "showLocalSearch", 3, false), localSearchQuery = prop($$props, "localSearchQuery", 3, "");
@@ -8960,7 +8960,7 @@ function DocumentView($$anchor, $$props) {
 		$$props.onlocalSearchQuery?.(localSearchQuery());
 		$$props.oncloseLocalSearch?.();
 	}
-	var div = root_2$2();
+	var div = root_2$3();
 	var node_1 = child(div);
 	var consequent_1 = ($$anchor) => {
 		var fragment = root_1$7();
@@ -9039,10 +9039,12 @@ delegate(["click"]);
 //#endregion
 //#region src/lib/center/TableOfContents.svelte
 var root$8 = /* @__PURE__ */ from_html(`<div role="button" tabindex="0"> </div>`);
-var root_1$6 = /* @__PURE__ */ from_html(`<div class="dk-right"><div class="dk-toc"><div class="dk-toc-title">On this page</div> <!></div> <div class="dk-status">TO CHANGE SOON</div></div>`);
+var root_1$6 = /* @__PURE__ */ from_html(`<span> </span>`);
+var root_2$2 = /* @__PURE__ */ from_html(`<div class="dk-right"><div class="dk-toc"><div class="dk-toc-title">On this page</div> <!></div> <div class="dk-meta svelte-a0hlu6"><span> </span> <!></div></div>`);
 function TableOfContents($$anchor, $$props) {
 	push($$props, true);
-	var div = root_1$6();
+	let fileCount = prop($$props, "fileCount", 3, 0), bookmarkCount = prop($$props, "bookmarkCount", 3, 0);
+	var div = root_2$2();
 	var div_1 = child(div);
 	each(sibling(child(div_1), 2), 17, () => $$props.items, index, ($$anchor, item) => {
 		var div_2 = root$8();
@@ -9056,8 +9058,24 @@ function TableOfContents($$anchor, $$props) {
 		append($$anchor, div_2);
 	});
 	reset(div_1);
-	next(2);
+	var div_3 = sibling(div_1, 2);
+	var span = child(div_3);
+	var text_1 = child(span);
+	reset(span);
+	var node_1 = sibling(span, 2);
+	var consequent = ($$anchor) => {
+		var span_1 = root_1$6();
+		var text_2 = child(span_1);
+		reset(span_1);
+		template_effect(() => set_text(text_2, `· ${bookmarkCount() ?? ""} bookmarks`));
+		append($$anchor, span_1);
+	};
+	if_block(node_1, ($$render) => {
+		if (bookmarkCount() > 0) $$render(consequent);
+	});
+	reset(div_3);
 	reset(div);
+	template_effect(() => set_text(text_1, `${fileCount() ?? ""} files`));
 	append($$anchor, div);
 	pop();
 }
@@ -9854,16 +9872,16 @@ function App($$anchor, $$props) {
 	var node_7 = sibling(div_4, 2);
 	{
 		let $0 = /* @__PURE__ */ user_derived(() => get(activeDoc)?.headings ?? []);
-		let $1 = /* @__PURE__ */ user_derived(() => get(indexStatus) === "ready" ? "Ready" : get(indexStatus) === "indexing" ? "Indexing..." : "Idle");
+		let $1 = /* @__PURE__ */ user_derived(() => get(indexCount) || get(tree).flatMap((n) => n.children ?? []).length);
 		TableOfContents(node_7, {
 			get items() {
 				return get($0);
 			},
-			get indexedCount() {
-				return get(indexCount);
-			},
-			get status() {
+			get fileCount() {
 				return get($1);
+			},
+			get bookmarkCount() {
+				return get(bookmarksList).length;
 			},
 			onnavigate: scrollToHeading
 		});

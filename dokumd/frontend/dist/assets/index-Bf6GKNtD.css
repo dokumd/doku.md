@@ -913,6 +913,13 @@ mark.mark-active {
     background: var(--accent);
     color: #fff;
 }
+  .dk-meta.svelte-a0hlu6 {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--muted, #888);
+    border-top: 0.5px solid var(--border);
+  }
+
   .dk-folder-list.svelte-6qkb0q {
     padding: 4px 0;
   }
