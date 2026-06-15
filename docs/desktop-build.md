@@ -12,8 +12,8 @@ sudo apt install libgtk-4-dev libwebkitgtk-6.0-dev
 ```
 
 **Ubuntu 22.04**: O GTK4 dos repositórios é 4.6 (insuficiente para Wails3
-alpha.93+). É necessário forçar GTK3 editando `build/config.yml` na
-secção `dev_mode > executes`:
+alpha.93+, que requer GTK 4.10+ para `GtkFileDialog`). É necessário forçar
+GTK3 editando `build/config.yml` na secção `dev_mode > executes`:
 
 ```yaml
 - cmd: wails3 build DEV=true EXTRA_TAGS=gtk3,fts5
@@ -56,51 +56,63 @@ wails3 dev
 O ficheiro `build/config.yml` já inclui `EXTRA_TAGS=gtk3,fts5`. Se
 estiveres numa versão recente do Ubuntu (24.04+) podes remover `gtk3`.
 
+Nota: o `wails3 dev` não aceita `-tags` directamente como flag CLI — a
+propagação de build tags faz-se sempre via `EXTRA_TAGS` no `build/config.yml`,
+não na linha de comandos.
+
 ## Build de produção
 
-### Linux (AppImage — recomendado)
+### Linux (AppImage)
 
-O AppImage inclui todas as dependências GTK e WebKit, funcionando em
-qualquer distribuição Linux **sem necessidade de instalar nada**.
-
-**Build nativa (precisa das libs instaladas):**
+**Build (Ubuntu 22.04, GTK3 legacy):**
 
 ```bash
+cd dokumd
 wails3 task linux:package EXTRA_TAGS=gtk3
 ```
 
-**Com Docker** (recomendado — não precisa de dependências nativas):
+**Build (Ubuntu 24.04+, GTK4):**
 
 ```bash
-wails3 build -platform linux -docker
+cd dokumd
+wails3 task linux:package
 ```
 
-Output: `build/linux/appimage/dokumd.AppImage`
+Output em `dokumd/bin/`: AppImage, `.deb` e `.rpm`.
 
-**Sem Docker** (precisa das libs nativas instaladas):
+> **A confirmar**: se um AppImage compilado com GTK4 (em Ubuntu 24.04+)
+> corre sem problemas num sistema com GTK4 < 4.10 (ex.: Ubuntu 22.04).
+> O AppImage empacota o WebKitGTK correcto consoante o stack, mas não
+> está confirmado se o GTK4 core também é empacotado. Até confirmação,
+> distribuir o build `gtk3` é a opção mais segura para compatibilidade
+> com sistemas mais antigos.
+
+### macOS e Windows
+
+Cross-compilation a partir de Linux requer Docker com a imagem `wails-cross`
+(Zig como cross-compiler):
 
 ```bash
-wails3 build -tags "gtk3 fts5" -platform linux
+wails3 task setup:docker   # uma vez
 ```
 
-### macOS
+> **A confirmar**: os nomes exactos das tasks de package para Windows e
+> macOS via Docker (`windows:package`, `darwin:package` ou variantes)
+> não foram validados nesta sessão.
 
-```bash
-wails3 build -platform darwin -docker
-```
+**Recomendação (alternativa)**: usar GitHub Actions com runners nativos
+por plataforma (`ubuntu-latest`, `windows-latest`, `macos-latest`), cada
+um correndo `wails3 task package` — esta task genérica resolve
+automaticamente para `{{OS}}:package` consoante o runner. Evita
+cross-compilation e problemas de assinatura/notarização.
 
-Gera `.app bundle`. Para notarização é preciso assinatura Apple Developer.
-
-### Windows
-
-```bash
-wails3 build -platform windows -docker
-```
-
-Gera `.exe`. Para MSI installer é necessário WiX Toolset.
+No `windows-latest`, o NSIS (`makensis`) não vem pré-instalado — é
+necessário `choco install nsis -y` antes do build.
 
 ## Distribuição
 
-- **Linux**: AppImage (inclui todas as dependências — recomendado)
-- **macOS**: .app bundle (zip ou DMG)
-- **Windows**: .exe (zip ou MSI installer)
+- **Linux**: AppImage (build `gtk3` recomendado até confirmação sobre
+  compatibilidade do build `gtk4` em sistemas mais antigos)
+- **macOS**: `.app` bundle — formato exacto e processo de notarização
+  não documentados ainda
+- **Windows**: `.exe` com instalador NSIS
