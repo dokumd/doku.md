@@ -11,6 +11,11 @@ import (
 	"strings"
 )
 
+// maxScanDepth is the maximum directory depth the scanner will traverse.
+// Paths deeper than this are skipped to avoid infinite recursion and
+// excessive scan times on deeply nested project structures.
+const maxScanDepth = 30
+
 // FileEntry represents a single item found during a directory scan.
 // The backend determines isDir from the OS; the frontend should not guess it.
 type FileEntry struct {
@@ -21,6 +26,11 @@ type FileEntry struct {
 // ScanMarkdownFiles walks the given rootPath recursively and returns all
 // Markdown files found as FileEntry structs. Directories whose base name is
 // in the excludeDirs list are skipped entirely (including their contents).
+//
+// Edge cases handled:
+//   - Symlinks are not followed (security, prevents infinite loops).
+//   - Permission errors are silently skipped (continue scanning).
+//   - Maximum directory depth is limited to maxScanDepth (30 levels).
 //
 // The returned paths are relative to rootPath. Binary files with a .md
 // extension are detected by content type and skipped.
@@ -37,6 +47,7 @@ func ScanMarkdownFiles(rootPath string, excludeDirs []string) ([]FileEntry, erro
 	var entries []FileEntry
 
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		// Permission denied or similar — skip and continue scanning.
 		if err != nil {
 			return nil
 		}
@@ -45,9 +56,27 @@ func ScanMarkdownFiles(rootPath string, excludeDirs []string) ([]FileEntry, erro
 			return nil
 		}
 
+		// Compute depth: how many path segments below the root.
 		rel, err := filepath.Rel(rootPath, path)
 		if err != nil {
 			return fmt.Errorf("compute relative path for %s: %w", path, err)
+		}
+		depth := len(strings.Split(rel, string(filepath.Separator)))
+
+		// Enforce maximum scan depth to prevent excessive recursion.
+		if depth > maxScanDepth {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		// Do not follow symlinks — they can create infinite directory loops.
+		if info.Mode()&os.ModeSymlink != 0 {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		if info.IsDir() {
