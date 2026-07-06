@@ -446,6 +446,7 @@ kbd {
     flex: 1;
     overflow-y: auto;
     padding: 44px 56px;
+    line-height: 2;
 }
 
 .dk-doc h1 {
